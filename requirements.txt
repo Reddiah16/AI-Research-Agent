@@ -1,0 +1,33 @@
+# Frontend
+streamlit==1.46.1
+
+# Multi-Agent Framework
+langgraph==0.6.5
+langchain==0.3.27
+langchain-community==0.3.27
+langchain-ollama==0.3.6
+
+# Ollama Client
+ollama==0.5.3
+
+# Data Validation
+pydantic==2.11.7
+
+# Environment Variables
+python-dotenv==1.1.1
+
+# Search Tool
+ddgs==9.14.4
+
+# Database
+sqlalchemy==2.0.43
+psycopg2-binary==2.9.10
+
+# Data Processing
+pandas==2.3.1
+
+# Utilities
+typing-extensions==4.14.1
+
+# Optional Logging and Monitoring
+langsmith==0.4.15
