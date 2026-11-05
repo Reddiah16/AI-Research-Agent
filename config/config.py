@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+import os
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -9,9 +10,14 @@ class ResearchConfig:
     search_provider: str = "duckduckgo"
     max_results: int = 3
 
-    jls_extract_var = "postgresql://postgres:postgresql@localhost:5432/ai_research_agent"
-    database_url: str = (
-        jls_extract_var
+    # Database connection string, resolved at instantiation time (after
+    # app.py calls load_dotenv()) so it is supplied through the DATABASE_URL
+    # environment variable in a git-ignored .env file.
+    # No credentials are hardcoded here — see .env.example for the format.
+    # An unconfigured value stays empty; database.get_engine() raises an
+    # actionable error before any connection is attempted.
+    database_url: str = field(
+        default_factory=lambda: os.environ.get("DATABASE_URL", "")
     )
 
     temperature: float = 0.3

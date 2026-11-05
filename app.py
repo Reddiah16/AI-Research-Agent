@@ -4,6 +4,10 @@ Thin shell: configure → sidebar → run_workflow → save → display.
 All logic lives in agents/, graph/, ui/, and database/.
 """
 
+import logging
+import time
+import uuid
+
 import streamlit as st
 from dotenv import load_dotenv
 
@@ -11,6 +15,7 @@ from config.config import ResearchConfig
 from generation.llm import check_ollama_connection
 from graph.workflow import run_research_pipeline
 from database.database import init_database, save_session, get_all_sessions, get_session_by_id
+from schemas.models import ResearchReport
 from ui.components import (
     render_sidebar,
     render_process,
@@ -20,7 +25,10 @@ from ui.components import (
     render_history_report,
     render_history_tab,
 )
+from ui.analytics import render_analytics
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 # --- Bootstrap ---
 load_dotenv()
@@ -63,12 +71,17 @@ past_sessions = get_all_sessions(config)
 render_history(past_sessions, config)
 
 # --- Tabs ---
-tab_process, tab_report, tab_history = st.tabs(["Research Process", "Report", "History"])
+tab_process, tab_report, tab_history, tab_analytics = st.tabs(
+    ["Research Process", "Report", "History", "📊 Analytics"]
+)
 
 # --- Run Pipeline ---
 if start_button:
     st.session_state.research_done = False
     st.session_state.final_state = None
+    # Idempotency key: exactly one metrics record per execution, enforced
+    # by the database even if this block is somehow re-entered.
+    st.session_state.current_run_id = str(uuid.uuid4())
 
     # Placeholders for progress feedback
     progress_bar = st.progress(0.0)
@@ -142,6 +155,9 @@ if start_button:
     # Initialize stream text in session state
     st.session_state.report_stream_text = ""
 
+    pipeline_start = time.perf_counter()
+    pipeline_succeeded = False
+
     try:
         final_state = run_research_pipeline(
             user_topic,
@@ -149,26 +165,44 @@ if start_button:
             on_progress=on_progress,
             on_chunk=on_chunk
         )
+        execution_time = time.perf_counter() - pipeline_start
+
+        # SUCCESS only when the editor produced a valid structured report;
+        # partially completed / unstructured runs are recorded as FAILED.
+        report = final_state.get("report")
+        is_success = (
+            final_state.get("status") == "complete"
+            and isinstance(report, ResearchReport)
+        )
+        execution_status = "SUCCESS" if is_success else "FAILED"
+
         st.session_state.final_state = final_state
         st.session_state.research_done = True
 
-        # Save to database
+        # Save to database.
+        # The report is only persisted for successful runs, so failed
+        # executions never inflate the generated-report count.
         session_id = save_session(
             topic=user_topic,
             plan=final_state.get("plan"),
             facts=final_state.get("facts", []),
             sources=final_state.get("sources", []),
-            report=final_state.get("report"),
-            status=final_state.get("status", "complete"),
+            report=report if is_success else None,
+            status=execution_status,
             config=config,
+            execution_time=execution_time,
+            run_id=st.session_state.current_run_id,
         )
         # Set this as the selected session so the sidebar/tab defaults to it
         st.session_state.selected_session_id = session_id
-
-        # Rerun to clean up progress bar and render final static report
-        st.rerun()
+        pipeline_succeeded = True
 
     except Exception as e:
+        # st.rerun() raises a control-flow exception (RerunException) — it is
+        # NOT a pipeline failure. Re-raise so it reaches Streamlit's runner.
+        if pipeline_succeeded:
+            raise
+        execution_time = time.perf_counter() - pipeline_start
         status_msg.error(f"Pipeline error: {e}")
         step_status.update(label="Pipeline failed", state="error")
         st.session_state.final_state = {
@@ -176,6 +210,33 @@ if start_button:
             "status": "error",
         }
         st.session_state.research_done = True
+
+        # Persist the failed run so failure metrics and timing are captured.
+        # A DB error here must not mask the original pipeline error.
+        # Credentials are stripped from the message by the database layer.
+        try:
+            save_session(
+                topic=user_topic,
+                plan=None,
+                facts=[],
+                sources=[],
+                report=None,
+                status="FAILED",
+                config=config,
+                execution_time=execution_time,
+                run_id=st.session_state.current_run_id,
+                error_message=f"{type(e).__name__}: {e}",
+            )
+        except Exception as db_error:
+            logger.error(f"Failed to persist failed run: {db_error}")
+            st.warning(f"Could not save failed session to history: {db_error}")
+
+    # Rerun OUTSIDE the try/except so the control-flow exception raised by
+    # st.rerun() is never mistaken for a pipeline error (which previously
+    # risked a duplicate FAILED record after a successful save).
+    if pipeline_succeeded:
+        # Clean up progress bar and render final static report
+        st.rerun()
 
 # --- Display Current Results ---
 if st.session_state.research_done and st.session_state.final_state:
@@ -198,3 +259,7 @@ with tab_history:
     # Refresh sessions list to include newly added or deleted sessions
     refreshed_sessions = get_all_sessions(config)
     render_history_tab(refreshed_sessions, config)
+
+# --- Display Analytics Dashboard ---
+with tab_analytics:
+    render_analytics(config)

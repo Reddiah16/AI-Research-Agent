@@ -5,8 +5,10 @@ venv/
 __pycache__/
 *.pyc
 
-# Environment variables
+# Environment variables — real secrets stay local; only the template is tracked
 .env
+.env.*
+!.env.example
 
 # Logs
 *.log

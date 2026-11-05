@@ -26,6 +26,9 @@ psycopg2-binary==2.9.10
 # Data Processing
 pandas==2.3.1
 
+# Charts (status-distribution color scale; also a Streamlit dependency)
+altair==6.2.1
+
 # Utilities
 typing-extensions==4.14.1
 
