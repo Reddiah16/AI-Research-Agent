@@ -1,0 +1,797 @@
+{
+  "generated_at": "2026-11-18T08:07:58+00:00",
+  "mode": "live",
+  "dataset": {
+    "filename": "golden_eval_v1.jsonl",
+    "sha256": "edacf9ec8225061ce4d47403301e73c4c06aad1fafb142c67243019cc8b8637e",
+    "version": "1.0.0",
+    "validation": {
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "G045: retrieval labels include non-verified sources",
+        "G046: retrieval labels include non-verified sources"
+      ],
+      "counts": {
+        "cases": 118,
+        "categories": {
+          "comparison": 21,
+          "conflicting_sources": 10,
+          "factual_research": 18,
+          "insufficient_evidence": 10,
+          "misleading_assumption": 10,
+          "multi_source_research": 19,
+          "recent_information": 10,
+          "technical_research": 20
+        },
+        "difficulties": {
+          "Difficult": 24,
+          "Easy": 40,
+          "Intermediate": 54
+        },
+        "provenance": {
+          "synthetic": 40,
+          "verified_reference": 78
+        },
+        "retrieval_labels": {
+          "available": 78,
+          "unavailable": 40
+        }
+      }
+    }
+  },
+  "environment": {
+    "python": "3.13.13",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "cpu_count": 8,
+    "llm_model": "qwen3:4b",
+    "ollama_host": "http://localhost:11434",
+    "search_provider": "duckduckgo",
+    "max_results": 3,
+    "enable_page_fetch": true,
+    "max_total_pages_per_run": 12
+  },
+  "cases_requested": 1,
+  "cases_completed": 1,
+  "errors": 0,
+  "retrieval": {
+    "cases_total": 1,
+    "measured_cases": 1,
+    "excluded_cases": 0,
+    "excluded_case_ids": [],
+    "metrics": {
+      "recall@1": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "precision@1": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "ndcg@1": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "recall@3": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "precision@3": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "ndcg@3": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "recall@5": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "precision@5": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "ndcg@5": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "recall@10": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "precision@10": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "ndcg@10": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "mrr": {
+        "mean": 0.0,
+        "measured_cases": 1,
+        "status": "measured"
+      }
+    },
+    "methodology": "Means are computed over cases with ground-truth labels only. Cases without labels are excluded, not scored as zero."
+  },
+  "answer_quality": {
+    "overall_mean": 0.5105,
+    "components": {
+      "faithfulness": {
+        "mean": 0.3333,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "answer_relevance": {
+        "mean": 0.62,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "contextual_precision": {
+        "mean": 0.6667,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "contextual_recall": {
+        "mean": 0.6667,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "citation_support": {
+        "mean": 0.3333,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "unsupported_claims": {
+        "mean": 0.3333,
+        "measured_cases": 1,
+        "status": "measured"
+      },
+      "evidence_coverage": {
+        "mean": 0.7302,
+        "measured_cases": 1,
+        "status": "measured"
+      }
+    },
+    "weights": {
+      "faithfulness": 0.3,
+      "answer_relevance": 0.2,
+      "contextual_precision": 0.15,
+      "contextual_recall": 0.15,
+      "citation_support": 0.15,
+      "evidence_coverage": 0.05
+    },
+    "measured_cases": 1
+  },
+  "expected_behavior": {
+    "synthetic_cases": 0,
+    "measured": 0,
+    "passed": 0,
+    "pass_rate": null,
+    "results": []
+  },
+  "latency": {
+    "samples": 1,
+    "mean": 294.677733,
+    "median": 294.677733,
+    "p50": 294.677733,
+    "p95": 294.677733,
+    "min": 294.677733,
+    "max": 294.677733,
+    "stdev": 0.0,
+    "status": "measured"
+  },
+  "token_usage": {
+    "calls": 2,
+    "calls_with_usage": 0,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0,
+    "model": "qwen3:4b"
+  },
+  "cases": [
+    {
+      "case_id": "G001",
+      "question": "What are the key verified facts about Retrieval Augmented Generation architecture and core components?",
+      "category": "factual_research",
+      "difficulty": "Easy",
+      "provenance": "verified_reference",
+      "status": "complete",
+      "error": null,
+      "elapsed_seconds": 294.678,
+      "pipeline_latency_seconds": 294.66,
+      "planner_latency_seconds": 13.383,
+      "research_latency_seconds": 15.731,
+      "editor_latency_seconds": 265.525,
+      "source_count": 7,
+      "retrieved_urls": [
+        "https://en.wikipedia.org/wiki/Retrieval-augmented_generation",
+        "https://www.ibm.com/think/topics/retrieval-augmented-generation",
+        "https://learn.deeplearning.ai/courses/retrieval-augmented-generation/lesson/rrngb/a-conversation-with-andrew-ng",
+        "https://blog.kalvad.com/rag-deep-dive-series-core-components/",
+        "https://www.lucentinnovation.com/resources/it-insights/the-core-components-of-rag",
+        "https://customgpt.ai/components-of-a-rag-system/",
+        "https://medium.com/autonomous-agents/rag-does-not-reduce-hallucinations-in-llms-math-deep-dive-900107671e10"
+      ],
+      "relevant_urls": [
+        "https://arxiv.org/abs/2005.11401",
+        "https://docs.langchain.com/oss/python/langchain/rag",
+        "https://github.com/facebookresearch/faiss/wiki",
+        "https://arxiv.org/abs/1603.09320"
+      ],
+      "generation_mode": "json",
+      "token_usage_delta": {
+        "calls": 2,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "available": false
+      },
+      "retrieval": {
+        "case_id": "G001",
+        "label_status": "available",
+        "ranked_count": 7,
+        "relevant_count": 4,
+        "matched_count": 0,
+        "matched_urls": [],
+        "first_relevant_rank": null,
+        "k_values": [
+          1,
+          3,
+          5,
+          10
+        ],
+        "metrics": {
+          "recall@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "recall@3": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@3": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@3": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "recall@5": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@5": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@5": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "recall@10": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@10": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@10": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "mrr": {
+            "value": 0.0,
+            "status": "measured"
+          }
+        }
+      },
+      "answer_quality": {
+        "evaluator_version": "answer-quality-1.0",
+        "question": "What are the key verified facts about Retrieval Augmented Generation architecture and core components?",
+        "report": {
+          "word_count": 232,
+          "source_count": 4,
+          "finding_count": 3
+        },
+        "components": {
+          "faithfulness": {
+            "score": 0.3333,
+            "status": "measured",
+            "method": "Strict faithfulness: share of verifiable report claims whose cited source excerpts cover the claim at the threshold. Partial support is reported but not counted as full support. Lexical proxy, not entailment.",
+            "details": {
+              "claims_total": 3,
+              "claims_supported": 1,
+              "claims_partially_supported": 1,
+              "claims_unsupported": 1,
+              "claims_unverifiable": 0,
+              "verifiable_claims": 3,
+              "support_threshold": 0.55,
+              "partial_threshold": 0.3,
+              "minimum_evidence_tokens": 5,
+              "claim_results": [
+                {
+                  "claim": "RAG integrates LLMs with external knowledge bases to improve response accuracy and reduce hallucinations",
+                  "source_ids": [
+                    "SRC-001"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.2727,
+                  "classification": "unsupported",
+                  "reason": ""
+                },
+                {
+                  "claim": "The core components include a knowledge base, embedding model, vector database, retriever, and generator (LLM)",
+                  "source_ids": [
+                    "SRC-004"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-004"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.9167,
+                  "classification": "supported",
+                  "reason": ""
+                },
+                {
+                  "claim": "RAG addresses knowledge cutoff by retrieving current documents at query time instead of relying on pre-trained data",
+                  "source_ids": [
+                    "SRC-005"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-005"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.5385,
+                  "classification": "partially_supported",
+                  "reason": ""
+                }
+              ],
+              "unresolved_claims": [
+                {
+                  "claim": "RAG addresses knowledge cutoff by retrieving current documents at query time instead of relying on pre-trained data",
+                  "source_ids": [
+                    "SRC-005"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-005"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.5385,
+                  "classification": "partially_supported",
+                  "reason": ""
+                }
+              ],
+              "partial_credit_score": 0.5,
+              "strict_faithfulness": 0.3333
+            }
+          },
+          "answer_relevance": {
+            "score": 0.62,
+            "status": "measured",
+            "method": "Lexical coverage: 0.7 mean(target-aspect token coverage) + 0.3 question-token coverage. Not semantic or factual.",
+            "details": {
+              "aspect_coverage": {
+                "Chunking": 1.0,
+                "Vector Indexing": 0.5,
+                "Dense Retrieval": 0.5,
+                "Prompt Augmentation": 0.0
+              },
+              "topic_coverage": 0.9
+            }
+          },
+          "contextual_precision": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Mean per-claim share of cited sources whose title/excerpt lexically covers the claim at the relevance threshold. Citation relevance only; not factual correctness.",
+            "details": {
+              "claims_evaluated": 3,
+              "relevance_threshold": 0.3,
+              "claim_results": [
+                {
+                  "claim": "RAG integrates LLMs with external knowledge bases to improve response accuracy and reduce hallucinations",
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 0,
+                  "cited_sources": 1,
+                  "precision": 0.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-001",
+                      "coverage": 0.2727,
+                      "relevant": false
+                    }
+                  ]
+                },
+                {
+                  "claim": "The core components include a knowledge base, embedding model, vector database, retriever, and generator (LLM)",
+                  "valid_source_ids": [
+                    "SRC-004"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 1,
+                  "cited_sources": 1,
+                  "precision": 1.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-004",
+                      "coverage": 0.9167,
+                      "relevant": true
+                    }
+                  ]
+                },
+                {
+                  "claim": "RAG addresses knowledge cutoff by retrieving current documents at query time instead of relying on pre-trained data",
+                  "valid_source_ids": [
+                    "SRC-005"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 1,
+                  "cited_sources": 1,
+                  "precision": 1.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-005",
+                      "coverage": 0.5385,
+                      "relevant": true
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "contextual_recall": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Share of expected reference findings whose content tokens are covered by the report at the threshold. Lexical proxy, not entailment.",
+            "details": {
+              "reference_findings": 3,
+              "supported_findings": 2,
+              "threshold": 0.55,
+              "findings": [
+                {
+                  "reference_finding": "RAG combines pre-trained parametric memory (LLM) with external non-parametric retrieval.",
+                  "coverage": 0.8889,
+                  "supported": true
+                },
+                {
+                  "reference_finding": "Core pipeline phases include document loading, chunking, vector embedding, similarity retrieval, and generation prompt synthesis.",
+                  "coverage": 0.5714,
+                  "supported": true
+                },
+                {
+                  "reference_finding": "Vector databases or indices (e.g. FAISS, HNSW) provide dense vector retrieval based on distance metrics like cosine similarity.",
+                  "coverage": 0.2667,
+                  "supported": false
+                }
+              ]
+            }
+          },
+          "citation_support": {
+            "score": 0.3333,
+            "status": "measured",
+            "method": "Share of cited findings whose cited source excerpt covers the claim at the threshold. Format validity (valid source ID) is reported separately. Content support is lexical overlap, not entailment.",
+            "details": {
+              "findings": 3,
+              "cited_findings": 3,
+              "format_valid_citations": 3,
+              "content_supported_citations": 1,
+              "citation_format_validity": 1.0,
+              "threshold": 0.55,
+              "results": [
+                {
+                  "claim": "RAG integrates LLMs with external knowledge bases to improve response accuracy and reduce hallucinations",
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.2727,
+                  "content_supported": false
+                },
+                {
+                  "claim": "The core components include a knowledge base, embedding model, vector database, retriever, and generator (LLM)",
+                  "valid_source_ids": [
+                    "SRC-004"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.9167,
+                  "content_supported": true
+                },
+                {
+                  "claim": "RAG addresses knowledge cutoff by retrieving current documents at query time instead of relying on pre-trained data",
+                  "valid_source_ids": [
+                    "SRC-005"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.5385,
+                  "content_supported": false
+                }
+              ]
+            }
+          },
+          "unsupported_claims": {
+            "score": 0.3333,
+            "status": "measured",
+            "method": "Share of checkable findings with no valid content-supported citation. Lower is better. Diagnostic only; not part of the overall weighting.",
+            "details": {
+              "claims": 3,
+              "unsupported": 1,
+              "partially_supported": 1,
+              "unsupported_claims": [
+                {
+                  "claim": "RAG integrates LLMs with external knowledge bases to improve response accuracy and reduce hallucinations",
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "best_coverage": 0.2727
+                }
+              ],
+              "partially_supported_claims": [
+                {
+                  "claim": "RAG addresses knowledge cutoff by retrieving current documents at query time instead of relying on pre-trained data",
+                  "valid_source_ids": [
+                    "SRC-005"
+                  ],
+                  "invalid_source_ids": [],
+                  "best_coverage": 0.5385
+                }
+              ],
+              "partial_threshold": 0.3,
+              "support_threshold": 0.55,
+              "direction": "lower_is_better"
+            }
+          },
+          "evidence_coverage": {
+            "score": 0.7302,
+            "status": "measured",
+            "method": "Mean of available retrieval-usability and citation-grounding ratios. Retrieval/alignment only; not source authority or factual correctness.",
+            "details": {
+              "retrieval_usability": {
+                "usable_evidence": 8,
+                "search_results": 9,
+                "ratio": 0.8889
+              },
+              "citation_grounding": {
+                "grounded_sources": 4,
+                "retrieved_sources": 7,
+                "ratio": 0.5714
+              }
+            }
+          }
+        },
+        "overall_score": 0.5105,
+        "weights_used": {
+          "faithfulness": 0.3,
+          "answer_relevance": 0.2,
+          "contextual_precision": 0.15,
+          "contextual_recall": 0.15,
+          "citation_support": 0.15,
+          "evidence_coverage": 0.05
+        },
+        "measured_components": [
+          "faithfulness",
+          "answer_relevance",
+          "contextual_precision",
+          "contextual_recall",
+          "citation_support",
+          "unsupported_claims",
+          "evidence_coverage"
+        ],
+        "unmeasured_components": [],
+        "limitations": [
+          "All components are deterministic lexical/structural proxies.",
+          "Citation support is not factual verification or entailment.",
+          "Unmeasured components are excluded from the weighting, never imputed as zero.",
+          "Contextual recall requires reference findings; it is not measurable for open-topic runs."
+        ]
+      },
+      "expected_behavior": null,
+      "engine_record": {
+        "record_version": "phase3-evaluation-1.0",
+        "evaluated_at": "2026-11-18T08:07:58+00:00",
+        "mode": "benchmark",
+        "dataset": {
+          "filename": "golden_eval_v1.jsonl",
+          "version": null,
+          "sha256": "edacf9ec8225061ce4d47403301e73c4c06aad1fafb142c67243019cc8b8637e"
+        },
+        "question": {
+          "id": "G001",
+          "domain": "AI",
+          "topic": "What are the key verified facts about Retrieval Augmented Generation architecture and core components?"
+        },
+        "report": {
+          "title": "Verified Facts on Retrieval Augmented Generation Architecture and Core Components",
+          "word_count": 232,
+          "structured": true,
+          "generation_mode": "json"
+        },
+        "metrics": {
+          "relevance": {
+            "score": 0.62,
+            "status": "measured",
+            "method": "Lexical coverage: 0.7 mean(target-aspect token coverage) + 0.3 topic token coverage. Not a semantic or factual score.",
+            "details": {
+              "aspect_coverage": {
+                "Chunking": 1.0,
+                "Vector Indexing": 0.5,
+                "Dense Retrieval": 0.5,
+                "Prompt Augmentation": 0.0
+              },
+              "topic_coverage": 0.9
+            }
+          },
+          "evidence_coverage": {
+            "score": 0.7302,
+            "status": "measured",
+            "method": "Mean of available retrieval-usability and citation-grounding ratios. Retrieval/alignment only; not source authority or factual correctness.",
+            "details": {
+              "retrieval_usability": {
+                "usable_evidence": 8,
+                "search_results": 9,
+                "ratio": 0.8889
+              },
+              "citation_grounding": {
+                "grounded_sources": 4,
+                "retrieved_sources": 7,
+                "ratio": 0.5714
+              }
+            }
+          },
+          "citation_quality": {
+            "score": 1.0,
+            "status": "measured",
+            "method": "0.6 × citation precision + 0.4 × claim-citation coverage. Alignment only; neither component proves a claim is true.",
+            "details": {
+              "supported_citations": 4,
+              "unsupported_citations": 0,
+              "citation_precision": 1.0,
+              "claim_citation_coverage": 1.0
+            }
+          },
+          "completeness": {
+            "score": 0.982,
+            "status": "measured",
+            "method": "Structural compliance: 0.75 × required-heading coverage + 0.25 × min(word_count / rubric minimum, 1).",
+            "details": {
+              "sections_present": {
+                "Introduction": true,
+                "Key Points": true,
+                "Applications": true,
+                "Challenges": true,
+                "Conclusion": true,
+                "References": true
+              },
+              "section_ratio": 1.0,
+              "word_count": 232,
+              "minimum_word_count": 250,
+              "word_ratio": 0.928
+            }
+          },
+          "factual_support": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Lexical claim-support proxy: share of verified benchmark claims whose content-token coverage is at least the threshold. Not entailment or factual verification. Unresolved claims are excluded, not promoted.",
+            "details": {
+              "verified_claims": 3,
+              "supported_verified_claims": 2,
+              "support_threshold": 0.55,
+              "claim_results": [
+                {
+                  "claim_id": "Q01-C1",
+                  "status": "verified",
+                  "lexical_coverage": 0.8889,
+                  "supported_proxy": true
+                },
+                {
+                  "claim_id": "Q01-C2",
+                  "status": "verified",
+                  "lexical_coverage": 0.5714,
+                  "supported_proxy": true
+                },
+                {
+                  "claim_id": "Q01-C3",
+                  "status": "verified",
+                  "lexical_coverage": 0.2667,
+                  "supported_proxy": false
+                }
+              ],
+              "unresolved_claims": []
+            }
+          }
+        },
+        "overall_score": 0.784,
+        "component_weights_used": {
+          "relevance": 0.2,
+          "evidence_coverage": 0.2,
+          "citation_quality": 0.2,
+          "completeness": 0.15,
+          "factual_support": 0.25
+        },
+        "measured_components": [
+          "relevance",
+          "evidence_coverage",
+          "citation_quality",
+          "completeness",
+          "factual_support"
+        ],
+        "unmeasured_components": [],
+        "claim_results": [
+          {
+            "claim_id": "Q01-C1",
+            "status": "verified",
+            "lexical_coverage": 0.8889,
+            "supported_proxy": true
+          },
+          {
+            "claim_id": "Q01-C2",
+            "status": "verified",
+            "lexical_coverage": 0.5714,
+            "supported_proxy": true
+          },
+          {
+            "claim_id": "Q01-C3",
+            "status": "verified",
+            "lexical_coverage": 0.2667,
+            "supported_proxy": false
+          }
+        ],
+        "unresolved_claims": [],
+        "methodology_notes": [
+          "Scores are lexical/structural measurements with explicit definitions; they are not semantic understanding or factual verification.",
+          "Citation quality measures whether emitted URLs were actually retrieved. A retrieved URL can still be cited for a claim it does not support.",
+          "Factual support is a lexical proxy: in benchmark mode, coverage of verified reference claims; in open-topic mode, coverage of report claims by the excerpts of the sources they cite. It is not entailment, source accuracy, or truth.",
+          "Open-topic claims without usable source evidence are unverifiable and are excluded from the factual-support denominator, never scored as false.",
+          "Claims marked partially_supported or needs_more_evidence are excluded from the factual-support denominator and reported as unresolved. They are never promoted.",
+          "Unmeasured components remain null and are removed from the overall weighting rather than being imputed as zero."
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "Live results depend on DuckDuckGo availability, model version, and host load.",
+    "Answer-quality components are deterministic lexical/structural proxies, not entailment or human judgement.",
+    "Synthetic cases have no verified reference answer; expected-behaviour scores are heuristic.",
+    "A small live sample is not a statistically representative benchmark."
+  ]
+}

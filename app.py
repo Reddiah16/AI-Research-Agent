@@ -26,6 +26,7 @@ from ui.components import (
     render_history_tab,
 )
 from ui.analytics import render_analytics
+from ui.evaluation_view import render_evaluation
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -71,8 +72,8 @@ past_sessions = get_all_sessions(config)
 render_history(past_sessions, config)
 
 # --- Tabs ---
-tab_process, tab_report, tab_history, tab_analytics = st.tabs(
-    ["Research Process", "Report", "History", "📊 Analytics"]
+tab_process, tab_report, tab_history, tab_analytics, tab_evaluation = st.tabs(
+    ["Research Process", "Report", "History", "📊 Analytics", "🔬 Evaluation"]
 )
 
 # --- Run Pipeline ---
@@ -192,6 +193,14 @@ if start_button:
             config=config,
             execution_time=execution_time,
             run_id=st.session_state.current_run_id,
+            planner_latency=final_state.get("planner_latency"),
+            research_latency=final_state.get("research_latency"),
+            editor_latency=final_state.get("editor_latency"),
+            search_network_duration=final_state.get("search_network_duration"),
+            grounded_sources_count=final_state.get("grounded_sources_count"),
+            citation_grounding_ratio=final_state.get("citation_grounding_ratio"),
+            editor_generation_mode=final_state.get("editor_generation_mode"),
+            evaluation=final_state.get("evaluation"),
         )
         # Set this as the selected session so the sidebar/tab defaults to it
         st.session_state.selected_session_id = session_id
@@ -226,6 +235,14 @@ if start_button:
                 execution_time=execution_time,
                 run_id=st.session_state.current_run_id,
                 error_message=f"{type(e).__name__}: {e}",
+                planner_latency=None,
+                research_latency=None,
+                editor_latency=None,
+                search_network_duration=None,
+                grounded_sources_count=0,
+                citation_grounding_ratio=0.0,
+                editor_generation_mode="failed",
+                evaluation=None,
             )
         except Exception as db_error:
             logger.error(f"Failed to persist failed run: {db_error}")
@@ -263,3 +280,7 @@ with tab_history:
 # --- Display Analytics Dashboard ---
 with tab_analytics:
     render_analytics(config)
+
+# --- Display Evaluation & Performance View ---
+with tab_evaluation:
+    render_evaluation(config)

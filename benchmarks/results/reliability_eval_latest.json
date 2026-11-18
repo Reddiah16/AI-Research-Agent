@@ -1,0 +1,137 @@
+{
+  "generated_at": "2026-11-18T07:39:47+00:00",
+  "mode": "deterministic_mocked",
+  "suite_version": "reliability-1.0",
+  "environment": {
+    "python": "3.13.13",
+    "platform": "Windows-11-10.0.26300-SP0"
+  },
+  "summary": {
+    "scenarios_total": 10,
+    "scenarios_passed": 10,
+    "scenarios_failed": 0
+  },
+  "scenarios": [
+    {
+      "scenario": "ollama_unavailable",
+      "expected_behavior": "Pipeline fails cleanly with a captured connection error and no report.",
+      "actual_outcome": "error=ConnectionError: simulated_ollama_unavailable",
+      "passed": true,
+      "failure_explanation": "",
+      "evidence": {
+        "error": "ConnectionError: simulated_ollama_unavailable"
+      }
+    },
+    {
+      "scenario": "model_timeout",
+      "expected_behavior": "Pipeline fails cleanly with a timeout error.",
+      "actual_outcome": "error=TimeoutError: simulated_model_timeout",
+      "passed": true,
+      "failure_explanation": "",
+      "evidence": {
+        "error": "TimeoutError: simulated_model_timeout"
+      }
+    },
+    {
+      "scenario": "search_service_unavailable",
+      "expected_behavior": "Complete with an explicit no-evidence report and no fabricated sources.",
+      "actual_outcome": "status=complete mode=no_evidence",
+      "passed": true,
+      "failure_explanation": "",
+      "evidence": {
+        "status": "complete",
+        "error": null
+      }
+    },
+    {
+      "scenario": "invalid_model_output",
+      "expected_behavior": "Record an unstructured fallback instead of aborting the run.",
+      "actual_outcome": "status=complete_unstructured mode=failed",
+      "passed": true,
+      "failure_explanation": "",
+      "evidence": {
+        "status": "complete_unstructured"
+      }
+    },
+    {
+      "scenario": "malformed_json",
+      "expected_behavior": "Conservative repair closes a truncated object without inventing fields.",
+      "actual_outcome": "repaired=True payload_keys=['report', 'title']",
+      "passed": true,
+      "failure_explanation": "",
+      "evidence": {
+        "payload": {
+          "title": "x",
+          "report": "y"
+        }
+      }
+    },
+    {
+      "scenario": "database_connection_failure",
+      "expected_behavior": "Raise the persistence error, roll back, and leave row counts unchanged.",
+      "actual_outcome": "error=RuntimeError: simulated_db_unavailable rows_before=0 rows_after=0",
+      "passed": true,
+      "failure_explanation": "",
+      "evidence": {
+        "rows_before": 0,
+        "rows_after": 0
+      }
+    },
+    {
+      "scenario": "empty_search_results",
+      "expected_behavior": "Return an explicit no-evidence report with no claims.",
+      "actual_outcome": "mode=no_evidence findings=0",
+      "passed": true,
+      "failure_explanation": "",
+      "evidence": {
+        "error": null
+      }
+    },
+    {
+      "scenario": "missing_citations",
+      "expected_behavior": "Report no_citations explicitly and score zero without inventing support.",
+      "actual_outcome": "status=no_citations score=0.0",
+      "passed": true,
+      "failure_explanation": "",
+      "evidence": {
+        "citation": {
+          "score": 0.0,
+          "status": "no_citations",
+          "method": "Citation precision against retrieved URLs. No citations were emitted.",
+          "details": {
+            "supported_citations": 0,
+            "unsupported_citations": 0,
+            "citation_precision": 0.0,
+            "claim_citation_coverage": null
+          }
+        }
+      }
+    },
+    {
+      "scenario": "partial_agent_execution",
+      "expected_behavior": "Surface the stage failure and do not return a fabricated complete report.",
+      "actual_outcome": "error=RuntimeError: simulated_partial_agent_execution",
+      "passed": true,
+      "failure_explanation": "",
+      "evidence": {
+        "error": "RuntimeError: simulated_partial_agent_execution"
+      }
+    },
+    {
+      "scenario": "interrupted_report_generation",
+      "expected_behavior": "Propagate interruption instead of persisting a partial report.",
+      "actual_outcome": "error=KeyboardInterrupt: simulated_interrupted_generation",
+      "passed": true,
+      "failure_explanation": "",
+      "evidence": {
+        "error": "KeyboardInterrupt: simulated_interrupted_generation"
+      }
+    }
+  ],
+  "database": "temporary SQLite only",
+  "limitations": [
+    "Scenarios use deterministic mocks and a temporary SQLite database.",
+    "They do not simulate production PostgreSQL failover or network partitions.",
+    "A passing suite is not a production reliability guarantee."
+  ]
+}

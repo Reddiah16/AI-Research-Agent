@@ -13,7 +13,7 @@ import json
 import logging
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy import (
     JSON,
@@ -30,6 +30,7 @@ from sqlalchemy import (
     inspect,
     text,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -42,6 +43,7 @@ from sqlalchemy.orm import (
 
 from config.config import ResearchConfig
 from schemas.models import ResearchPlan, ResearchReport
+from tools.report_parsing import count_words
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +59,10 @@ _ERROR_MESSAGE_MAX_LEN = 512
 
 # Matches credentials embedded in connection URLs (e.g. inside exception text).
 _CREDENTIAL_RE = re.compile(r"://[^/\s:@]+:[^/\s@]+@")
+
+# Structured report payloads use JSONB on PostgreSQL (indexable, canonical
+# storage) and plain JSON on SQLite, which keeps the dev fallback working.
+_STRUCTURED_JSON = JSON().with_variant(JSONB(), "postgresql")
 
 
 # --- SQLAlchemy Models ---
@@ -82,6 +88,25 @@ class ResearchSession(Base):
     run_id = Column(String(36), nullable=True, unique=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     completed_at = Column(DateTime, nullable=True)
+
+    # Phase 2 Telemetry & Instrumentation (all nullable for backward compatibility)
+    planner_latency_seconds = Column(Float, nullable=True)
+    research_latency_seconds = Column(Float, nullable=True)
+    editor_latency_seconds = Column(Float, nullable=True)
+    search_network_latency_seconds = Column(Float, nullable=True)
+    grounded_sources_count = Column(Integer, nullable=True)
+    citation_grounding_ratio = Column(Float, nullable=True)
+    editor_generation_mode = Column(String(50), nullable=True)
+
+    # Phase 3 evaluation persistence (nullable for backward compatibility).
+    # Scores are reproducible lexical/structural measurements, not truth.
+    evaluation_overall_score = Column(Float, nullable=True)
+    evaluation_relevance_score = Column(Float, nullable=True)
+    evaluation_evidence_coverage = Column(Float, nullable=True)
+    evaluation_citation_quality = Column(Float, nullable=True)
+    evaluation_completeness = Column(Float, nullable=True)
+    evaluation_factual_support = Column(Float, nullable=True)
+    evaluation_metadata = Column(JSON, nullable=True)
 
     # Relationships
     report = relationship(
@@ -112,6 +137,11 @@ class ResearchReportRow(Base):
     report_content = Column(Text, nullable=False)
     sources = Column(JSON, default=list)
     word_count = Column(Integer, default=0)
+    # Structured report payloads added after initial release. Nullable so
+    # historical rows remain valid; readers treat NULL as an empty list.
+    key_findings = Column(_STRUCTURED_JSON, nullable=True)
+    unsupported_citations = Column(_STRUCTURED_JSON, nullable=True)
+    source_details = Column(_STRUCTURED_JSON, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationship
@@ -190,6 +220,7 @@ def init_database(config: ResearchConfig) -> None:
     engine = get_engine(config)
     Base.metadata.create_all(engine)
     _migrate_add_columns(engine)
+    _migrate_add_report_columns(engine)
     logger.info("Database tables initialized")
 
 
@@ -208,6 +239,21 @@ def _migrate_add_columns(engine) -> None:
         "execution_time_seconds": "FLOAT",
         "error_message": "TEXT",
         "run_id": "VARCHAR(36)",
+        "planner_latency_seconds": "FLOAT",
+        "research_latency_seconds": "FLOAT",
+        "editor_latency_seconds": "FLOAT",
+        "search_network_latency_seconds": "FLOAT",
+        "grounded_sources_count": "INTEGER",
+        "citation_grounding_ratio": "FLOAT",
+        "editor_generation_mode": "VARCHAR(50)",
+        # Phase 3 evaluation columns — nullable, additive, non-destructive.
+        "evaluation_overall_score": "FLOAT",
+        "evaluation_relevance_score": "FLOAT",
+        "evaluation_evidence_coverage": "FLOAT",
+        "evaluation_citation_quality": "FLOAT",
+        "evaluation_completeness": "FLOAT",
+        "evaluation_factual_support": "FLOAT",
+        "evaluation_metadata": "JSON",
     }
     try:
         existing = {c["name"] for c in inspect(engine).get_columns("research_sessions")}
@@ -228,6 +274,36 @@ def _migrate_add_columns(engine) -> None:
         # Never let a migration check break app startup — the columns are
         # nullable, so reads/writes remain safe either way.
         logger.warning(f"Schema migration check skipped: {e}")
+
+
+def _migrate_add_report_columns(engine) -> None:
+    """Additive migration for structured report payload columns.
+
+    Historical ``research_reports`` rows keep ``NULL`` in the three new
+    columns; ``get_session_by_id`` normalises that to an empty list. No row is
+    updated, dropped, or rewritten. PostgreSQL gets ``JSONB``; every other
+    backend (SQLite dev fallback) gets ``JSON``.
+    """
+    json_type = "JSONB" if engine.dialect.name == "postgresql" else "JSON"
+    new_columns = {
+        "key_findings": json_type,
+        "unsupported_citations": json_type,
+        "source_details": json_type,
+    }
+    try:
+        inspector = inspect(engine)
+        if "research_reports" not in inspector.get_table_names():
+            return
+        existing = {c["name"] for c in inspector.get_columns("research_reports")}
+        with engine.begin() as conn:
+            for col_name, col_type in new_columns.items():
+                if col_name not in existing:
+                    conn.execute(text(
+                        f"ALTER TABLE research_reports ADD COLUMN {col_name} {col_type}"
+                    ))
+                    logger.info(f"Migration: added research_reports.{col_name}")
+    except Exception as e:
+        logger.warning(f"Report schema migration check skipped: {e}")
 
 
 # --- CRUD Operations ---
@@ -251,6 +327,35 @@ def _sanitize_error_message(message: Optional[str], config: ResearchConfig) -> O
     return clean
 
 
+def _evaluation_score(evaluation: Optional[Dict], name: str) -> Optional[float]:
+    """Extract a numeric component score from an evaluation record.
+
+    Returns None when the component was not measured. Never substitutes zero
+    for an unavailable score.
+    """
+    if not isinstance(evaluation, dict):
+        return None
+    metrics = evaluation.get("metrics")
+    if not isinstance(metrics, dict):
+        return None
+    component = metrics.get(name)
+    if not isinstance(component, dict):
+        return None
+    value = component.get("score")
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return round(float(value), 4)
+    return None
+
+
+def _evaluation_overall(evaluation: Optional[Dict]) -> Optional[float]:
+    if not isinstance(evaluation, dict):
+        return None
+    value = evaluation.get("overall_score")
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return round(float(value), 4)
+    return None
+
+
 def save_session(
     topic: str,
     plan: Optional[ResearchPlan],
@@ -262,6 +367,14 @@ def save_session(
     execution_time: Optional[float] = None,
     run_id: Optional[str] = None,
     error_message: Optional[str] = None,
+    planner_latency: Optional[float] = None,
+    research_latency: Optional[float] = None,
+    editor_latency: Optional[float] = None,
+    search_network_duration: Optional[float] = None,
+    grounded_sources_count: Optional[int] = None,
+    citation_grounding_ratio: Optional[float] = None,
+    editor_generation_mode: Optional[str] = None,
+    evaluation: Optional[Dict] = None,
 ) -> int:
     """Save a complete research session to the database.
 
@@ -279,6 +392,16 @@ def save_session(
             created and the existing session ID is returned.
         error_message: Failure reason for FAILED runs (sanitized before
             storage; never include credentials).
+        planner_latency: Duration of planner node in seconds (optional).
+        research_latency: Duration of research node in seconds (optional).
+        editor_latency: Duration of editor node in seconds (optional).
+        search_network_duration: Aggregated web search network round-trip duration in seconds (optional).
+        grounded_sources_count: Count of retrieved URLs cited in the report (optional).
+        citation_grounding_ratio: Ratio of cited URLs to retrieved URLs (optional).
+        editor_generation_mode: Mode used for report generation: 'json', 'markdown_fallback', or 'failed' (optional).
+        evaluation: Optional Phase 3 evaluation record (see evaluation.engine).
+            Only numeric component scores and a JSON copy are persisted; a
+            missing/unmeasured component is stored as NULL, never as zero.
 
     Returns:
         The session ID.
@@ -310,6 +433,20 @@ def save_session(
             error_message=_sanitize_error_message(error_message, config),
             run_id=run_id,
             completed_at=datetime.now(timezone.utc),
+            planner_latency_seconds=round(planner_latency, 3) if planner_latency is not None else None,
+            research_latency_seconds=round(research_latency, 3) if research_latency is not None else None,
+            editor_latency_seconds=round(editor_latency, 3) if editor_latency is not None else None,
+            search_network_latency_seconds=round(search_network_duration, 3) if search_network_duration is not None else None,
+            grounded_sources_count=grounded_sources_count,
+            citation_grounding_ratio=round(citation_grounding_ratio, 4) if citation_grounding_ratio is not None else None,
+            editor_generation_mode=editor_generation_mode,
+            evaluation_overall_score=_evaluation_overall(evaluation),
+            evaluation_relevance_score=_evaluation_score(evaluation, "relevance"),
+            evaluation_evidence_coverage=_evaluation_score(evaluation, "evidence_coverage"),
+            evaluation_citation_quality=_evaluation_score(evaluation, "citation_quality"),
+            evaluation_completeness=_evaluation_score(evaluation, "completeness"),
+            evaluation_factual_support=_evaluation_score(evaluation, "factual_support"),
+            evaluation_metadata=evaluation if isinstance(evaluation, dict) else None,
         )
         session.add(db_session)
         session.flush()  # Get the ID
@@ -322,7 +459,12 @@ def save_session(
                 outline=report.outline,
                 report_content=report.report,
                 sources=report.sources,
-                word_count=report.word_count,
+                # Always derive from the final body; a model-supplied value is
+                # never trusted at persistence time.
+                word_count=count_words(report.report),
+                key_findings=list(report.key_findings or []),
+                unsupported_citations=list(report.unsupported_citations or []),
+                source_details=list(report.source_details or []),
             )
             session.add(db_report)
         elif report:
@@ -332,7 +474,10 @@ def save_session(
                 outline=[],
                 report_content=str(report),
                 sources=sources,
-                word_count=len(str(report).split()),
+                word_count=count_words(str(report)),
+                key_findings=[],
+                unsupported_citations=[],
+                source_details=[],
             )
             session.add(db_report)
 
@@ -441,6 +586,20 @@ def get_session_by_id(session_id: int, config: ResearchConfig) -> Optional[Dict]
             "status": row.status,
             "model_name": row.model_name,
             "execution_time_seconds": row.execution_time_seconds,
+            "planner_latency_seconds": row.planner_latency_seconds,
+            "research_latency_seconds": row.research_latency_seconds,
+            "editor_latency_seconds": row.editor_latency_seconds,
+            "search_network_latency_seconds": row.search_network_latency_seconds,
+            "grounded_sources_count": row.grounded_sources_count,
+            "citation_grounding_ratio": row.citation_grounding_ratio,
+            "editor_generation_mode": row.editor_generation_mode,
+            "evaluation_overall_score": row.evaluation_overall_score,
+            "evaluation_relevance_score": row.evaluation_relevance_score,
+            "evaluation_evidence_coverage": row.evaluation_evidence_coverage,
+            "evaluation_citation_quality": row.evaluation_citation_quality,
+            "evaluation_completeness": row.evaluation_completeness,
+            "evaluation_factual_support": row.evaluation_factual_support,
+            "evaluation_metadata": row.evaluation_metadata,
             "created_at": row.created_at.isoformat() if row.created_at else None,
             "completed_at": row.completed_at.isoformat() if row.completed_at else None,
             "report": None,
@@ -453,7 +612,13 @@ def get_session_by_id(session_id: int, config: ResearchConfig) -> Optional[Dict]
                 "outline": row.report.outline,
                 "report_content": row.report.report_content,
                 "sources": row.report.sources,
-                "word_count": row.report.word_count,
+                # Recomputed so historical rows written before the word-count
+                # fix display accurately without mutating stored data.
+                "word_count": count_words(row.report.report_content),
+                "stored_word_count": row.report.word_count,
+                "key_findings": list(row.report.key_findings or []),
+                "unsupported_citations": list(row.report.unsupported_citations or []),
+                "source_details": list(row.report.source_details or []),
             }
 
         result["sources"] = [
@@ -516,6 +681,21 @@ def _to_metrics_record(row: "ResearchSession") -> Dict:
         "error_message": row.error_message,
         "created_at": row.created_at.isoformat() if row.created_at else None,
         "completed_at": row.completed_at.isoformat() if row.completed_at else None,
+        # Phase 2 Telemetry & Instrumentation fields
+        "planner_latency_seconds": row.planner_latency_seconds,
+        "research_latency_seconds": row.research_latency_seconds,
+        "editor_latency_seconds": row.editor_latency_seconds,
+        "search_network_latency_seconds": row.search_network_latency_seconds,
+        "grounded_sources_count": row.grounded_sources_count,
+        "citation_grounding_ratio": row.citation_grounding_ratio,
+        "editor_generation_mode": row.editor_generation_mode,
+        # Phase 3 evaluation fields (None = not measured / legacy row)
+        "evaluation_overall_score": row.evaluation_overall_score,
+        "evaluation_relevance_score": row.evaluation_relevance_score,
+        "evaluation_evidence_coverage": row.evaluation_evidence_coverage,
+        "evaluation_citation_quality": row.evaluation_citation_quality,
+        "evaluation_completeness": row.evaluation_completeness,
+        "evaluation_factual_support": row.evaluation_factual_support,
     }
 
 
@@ -806,5 +986,239 @@ def get_execution_history_records(
             query.order_by(ResearchSession.created_at.desc()).limit(limit).all()
         )
         return [_to_metrics_record(r) for r in rows]
+    finally:
+        session.close()
+
+
+# --- Phase 2 Telemetry Aggregation Queries ---
+
+def get_node_latency_averages(config: ResearchConfig) -> Dict[str, Optional[float]]:
+    """Compute average node-level latencies across runs with telemetry.
+
+    Returns:
+        Dict with 'planner_latency', 'research_latency', 'editor_latency',
+        and 'search_network_latency' (each float or None if unrecorded).
+    """
+    session = get_session(config)
+    try:
+        avg_planner = session.query(func.avg(ResearchSession.planner_latency_seconds)).scalar()
+        avg_research = session.query(func.avg(ResearchSession.research_latency_seconds)).scalar()
+        avg_editor = session.query(func.avg(ResearchSession.editor_latency_seconds)).scalar()
+        avg_search_net = session.query(func.avg(ResearchSession.search_network_latency_seconds)).scalar()
+
+        return {
+            "planner_latency": round(float(avg_planner), 3) if avg_planner is not None else None,
+            "research_latency": round(float(avg_research), 3) if avg_research is not None else None,
+            "editor_latency": round(float(avg_editor), 3) if avg_editor is not None else None,
+            "search_network_latency": round(float(avg_search_net), 3) if avg_search_net is not None else None,
+        }
+    finally:
+        session.close()
+
+
+def get_citation_grounding_averages(config: ResearchConfig) -> Dict[str, Optional[float]]:
+    """Compute average source grounding metrics across runs with telemetry.
+
+    Returns:
+        Dict with 'average_grounded_sources' and 'average_grounding_ratio'.
+    """
+    session = get_session(config)
+    try:
+        avg_grounded = session.query(func.avg(ResearchSession.grounded_sources_count)).scalar()
+        avg_ratio = session.query(func.avg(ResearchSession.citation_grounding_ratio)).scalar()
+
+        return {
+            "average_grounded_sources": round(float(avg_grounded), 2) if avg_grounded is not None else None,
+            "average_grounding_ratio": round(float(avg_ratio), 4) if avg_ratio is not None else None,
+        }
+    finally:
+        session.close()
+
+
+def get_editor_generation_stats(config: ResearchConfig) -> Dict[str, Any]:
+    """Measure Editor JSON generation success and fallback frequency.
+
+    Returns:
+        Dict with:
+            - total_tracked_runs: int
+            - json_success_count: int
+            - markdown_fallback_count: int
+            - failed_count: int
+            - json_success_rate: Optional[float]
+            - fallback_rate: Optional[float]
+    """
+    session = get_session(config)
+    try:
+        rows = (
+            session.query(
+                ResearchSession.editor_generation_mode,
+                func.count(ResearchSession.id),
+            )
+            .filter(ResearchSession.editor_generation_mode.isnot(None))
+            .group_by(ResearchSession.editor_generation_mode)
+            .all()
+        )
+        stats = {
+            "json": 0,
+            "markdown_fallback": 0,
+            "failed": 0,
+        }
+        for mode, count in rows:
+            if mode in stats:
+                stats[mode] = count
+            else:
+                stats[mode] = count
+
+        total = sum(stats.values())
+        json_rate = round(stats["json"] / total, 4) if total > 0 else None
+        fallback_rate = round(stats["markdown_fallback"] / total, 4) if total > 0 else None
+
+        return {
+            "total_tracked_runs": total,
+            "json_success_count": stats.get("json", 0),
+            "markdown_fallback_count": stats.get("markdown_fallback", 0),
+            "failed_count": stats.get("failed", 0),
+            "json_success_rate": json_rate,
+            "fallback_rate": fallback_rate,
+        }
+    finally:
+        session.close()
+
+
+# --- Phase 3 Evaluation Persistence Queries ---
+
+def get_evaluation_averages(config: ResearchConfig) -> Dict[str, Optional[float]]:
+    """Average measured evaluation scores across runs that recorded them.
+
+    Legacy rows and runs where a component was not measurable are excluded by
+    SQL ``IS NOT NULL``. No value is backfilled or imputed.
+    """
+    session = get_session(config)
+    try:
+        columns = {
+            "overall": ResearchSession.evaluation_overall_score,
+            "relevance": ResearchSession.evaluation_relevance_score,
+            "evidence_coverage": ResearchSession.evaluation_evidence_coverage,
+            "citation_quality": ResearchSession.evaluation_citation_quality,
+            "completeness": ResearchSession.evaluation_completeness,
+            "factual_support": ResearchSession.evaluation_factual_support,
+        }
+        result: Dict[str, Optional[float]] = {}
+        for name, column in columns.items():
+            value = session.query(func.avg(column)).filter(column.isnot(None)).scalar()
+            result[name] = round(float(value), 4) if value is not None else None
+        result["tracked_runs"] = (
+            session.query(func.count(ResearchSession.id))
+            .filter(ResearchSession.evaluation_overall_score.isnot(None))
+            .scalar()
+            or 0
+        )
+        return result
+    finally:
+        session.close()
+
+
+def get_evaluation_series(
+    config: ResearchConfig, limit: int = 100
+) -> List[Dict]:
+    """Evaluation scores per recent run (newest first).
+
+    Rows without an evaluation record are omitted; a legacy row is never
+    shown as a zero score.
+    """
+    session = get_session(config)
+    try:
+        rows = (
+            session.query(
+                ResearchSession.id,
+                ResearchSession.topic,
+                ResearchSession.created_at,
+                ResearchSession.evaluation_overall_score,
+                ResearchSession.evaluation_relevance_score,
+                ResearchSession.evaluation_evidence_coverage,
+                ResearchSession.evaluation_citation_quality,
+                ResearchSession.evaluation_completeness,
+                ResearchSession.evaluation_factual_support,
+                ResearchSession.editor_generation_mode,
+            )
+            .filter(ResearchSession.evaluation_metadata.isnot(None))
+            .order_by(ResearchSession.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+        return [
+            {
+                "id": r.id,
+                "topic": r.topic,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+                "overall": r.evaluation_overall_score,
+                "relevance": r.evaluation_relevance_score,
+                "evidence_coverage": r.evaluation_evidence_coverage,
+                "citation_quality": r.evaluation_citation_quality,
+                "completeness": r.evaluation_completeness,
+                "factual_support": r.evaluation_factual_support,
+                "generation_mode": r.editor_generation_mode,
+            }
+            for r in rows
+        ]
+    finally:
+        session.close()
+
+
+def get_evaluation_summary(config: ResearchConfig, limit: int = 500) -> Dict[str, Any]:
+    """Aggregate reported unsupported citations and unresolved claims.
+
+    Counts come from persisted evaluation metadata, not from the benchmark
+    dataset. Unresolved benchmark claims are never counted as supported.
+    """
+    session = get_session(config)
+    try:
+        rows = (
+            session.query(ResearchSession.evaluation_metadata)
+            .filter(ResearchSession.evaluation_metadata.isnot(None))
+            .order_by(ResearchSession.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+        unsupported_citations = 0
+        unresolved_claims = 0
+        records_with_metadata = 0
+        claim_coverages: List[float] = []
+        precisions: List[float] = []
+        for (metadata,) in rows:
+            if not isinstance(metadata, dict):
+                continue
+            records_with_metadata += 1
+            metrics = metadata.get("metrics")
+            if isinstance(metrics, dict):
+                citation = metrics.get("citation_quality")
+                if isinstance(citation, dict):
+                    details = citation.get("details")
+                    if isinstance(details, dict):
+                        unsupported_citations += int(
+                            details.get("unsupported_citations") or 0
+                        )
+                        coverage = details.get("claim_citation_coverage")
+                        if isinstance(coverage, (int, float)) and not isinstance(coverage, bool):
+                            claim_coverages.append(float(coverage))
+                        precision = details.get("citation_precision")
+                        if isinstance(precision, (int, float)) and not isinstance(precision, bool):
+                            precisions.append(float(precision))
+            claims = metadata.get("unresolved_claims")
+            if isinstance(claims, list):
+                unresolved_claims += len(claims)
+        return {
+            "records_with_metadata": records_with_metadata,
+            "unsupported_citations": unsupported_citations,
+            "unresolved_claims": unresolved_claims,
+            "claim_citation_coverage_mean": (
+                round(sum(claim_coverages) / len(claim_coverages), 4)
+                if claim_coverages
+                else None
+            ),
+            "citation_precision_mean": (
+                round(sum(precisions) / len(precisions), 4) if precisions else None
+            ),
+        }
     finally:
         session.close()

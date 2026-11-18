@@ -147,13 +147,34 @@ def run_benchmark(limit: int, skip_existing: bool) -> str:
                 config=config,
                 execution_time=elapsed,
                 run_id=run_id,
+                planner_latency=final_state.get("planner_latency"),
+                research_latency=final_state.get("research_latency"),
+                editor_latency=final_state.get("editor_latency"),
+                search_network_duration=final_state.get("search_network_duration"),
+                grounded_sources_count=final_state.get("grounded_sources_count"),
+                citation_grounding_ratio=final_state.get("citation_grounding_ratio"),
+                editor_generation_mode=final_state.get("editor_generation_mode"),
             )
             report_persisted = is_success
+            planner_lat = final_state.get("planner_latency")
+            research_lat = final_state.get("research_latency")
+            editor_lat = final_state.get("editor_latency")
+            search_net_dur = final_state.get("search_network_duration")
+            grounded_cnt = final_state.get("grounded_sources_count")
+            grounding_rat = final_state.get("citation_grounding_ratio")
+            gen_mode = final_state.get("editor_generation_mode")
         except Exception as e:
             elapsed = time.perf_counter() - start
             status = "FAILED"
             unique_sources = 0
             report_persisted = False
+            planner_lat = None
+            research_lat = None
+            editor_lat = None
+            search_net_dur = None
+            grounded_cnt = 0
+            grounding_rat = 0.0
+            gen_mode = "failed"
             error_text = f"{type(e).__name__}: {e}"
             try:
                 session_id = save_session(
@@ -161,6 +182,13 @@ def run_benchmark(limit: int, skip_existing: bool) -> str:
                     report=None, status="FAILED", config=config,
                     execution_time=elapsed, run_id=run_id,
                     error_message=error_text,
+                    planner_latency=None,
+                    research_latency=None,
+                    editor_latency=None,
+                    search_network_duration=None,
+                    grounded_sources_count=0,
+                    citation_grounding_ratio=0.0,
+                    editor_generation_mode="failed",
                 )
             except Exception as db_error:
                 session_id = None
@@ -173,6 +201,13 @@ def run_benchmark(limit: int, skip_existing: bool) -> str:
             "status": status,
             "execution_time_seconds": round(elapsed, 2),
             "unique_sources": unique_sources,
+            "planner_latency": planner_lat,
+            "research_latency": research_lat,
+            "editor_latency": editor_lat,
+            "search_network_duration": search_net_dur,
+            "grounded_sources_count": grounded_cnt,
+            "citation_grounding_ratio": grounding_rat,
+            "editor_generation_mode": gen_mode,
             "report_generated": status == "SUCCESS",
             "report_persisted": report_persisted,
             "error_message": (error_text or "")[:200],
@@ -195,7 +230,9 @@ def run_benchmark(limit: int, skip_existing: bool) -> str:
 
     fields = list(results[0].keys()) if results else [
         "query", "run_id", "session_id", "status", "execution_time_seconds",
-        "unique_sources", "report_generated", "report_persisted",
+        "unique_sources", "planner_latency", "research_latency", "editor_latency",
+        "search_network_duration", "grounded_sources_count", "citation_grounding_ratio",
+        "editor_generation_mode", "report_generated", "report_persisted",
         "error_message", "timestamp_utc",
     ]
     with open(csv_path, "w", newline="", encoding="utf-8") as f:

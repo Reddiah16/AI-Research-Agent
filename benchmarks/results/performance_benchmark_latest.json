@@ -1,0 +1,401 @@
+{
+  "generated_at": "2026-11-18T08:52:29+00:00",
+  "mode": "mocked",
+  "environment": {
+    "timestamp_utc": "2026-11-18T08:52:29+00:00",
+    "python": "3.13.13",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+    "cpu_count": 8,
+    "llm_model": "qwen3:4b",
+    "ollama_host": "http://localhost:11434",
+    "search_provider": "duckduckgo",
+    "note": "Deterministic stubs replace planner/researcher/editor. Latency covers orchestration, local evaluation, and temporary SQLite persistence only.",
+    "concurrency": 1,
+    "repetitions": 8,
+    "warmup": 2,
+    "questions": [
+      "solar panel efficiency",
+      "residential solar systems",
+      "solar energy systems"
+    ]
+  },
+  "summary": {
+    "runs": 24,
+    "successful_completions": 24,
+    "failed_executions": 0,
+    "success_rate": 1.0,
+    "retry_count": 0,
+    "end_to_end": {
+      "samples": 24,
+      "mean": 0.040751,
+      "median": 0.040708,
+      "p50": 0.040708,
+      "p95": 0.042184,
+      "min": 0.038153,
+      "max": 0.045189,
+      "stdev": 0.001371,
+      "status": "measured"
+    },
+    "successful_end_to_end": {
+      "samples": 24,
+      "mean": 0.040751,
+      "median": 0.040708,
+      "p50": 0.040708,
+      "p95": 0.042184,
+      "min": 0.038153,
+      "max": 0.045189,
+      "stdev": 0.001371,
+      "status": "measured"
+    },
+    "stages": {
+      "planner": {
+        "samples": 24,
+        "mean": 0.0,
+        "median": 0.0,
+        "p50": 0.0,
+        "p95": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "stdev": 0.0,
+        "status": "measured"
+      },
+      "research": {
+        "samples": 24,
+        "mean": 0.0,
+        "median": 0.0,
+        "p50": 0.0,
+        "p95": 0.0,
+        "min": 0.0,
+        "max": 0.0,
+        "stdev": 0.0,
+        "status": "measured"
+      },
+      "editor": {
+        "samples": 24,
+        "mean": 8.3e-05,
+        "median": 0.0,
+        "p50": 0.0,
+        "p95": 0.00085,
+        "min": 0.0,
+        "max": 0.001,
+        "stdev": 0.000282,
+        "status": "measured"
+      },
+      "search_network": {
+        "samples": 24,
+        "mean": 0.166667,
+        "median": 0.15,
+        "p50": 0.15,
+        "p95": 0.3,
+        "min": 0.05,
+        "max": 0.3,
+        "stdev": 0.10495,
+        "status": "measured"
+      }
+    },
+    "memory_peak_kb": {
+      "max": 346.7,
+      "mean": 339.4,
+      "samples": 24
+    },
+    "errors": [],
+    "by_size": {
+      "small": {
+        "runs": 8,
+        "successful_completions": 8,
+        "failed_executions": 0,
+        "success_rate": 1.0,
+        "retry_count": 0,
+        "end_to_end": {
+          "samples": 8,
+          "mean": 0.03993,
+          "median": 0.039984,
+          "p50": 0.039984,
+          "p95": 0.041503,
+          "min": 0.038153,
+          "max": 0.041753,
+          "stdev": 0.001238,
+          "status": "measured"
+        },
+        "successful_end_to_end": {
+          "samples": 8,
+          "mean": 0.03993,
+          "median": 0.039984,
+          "p50": 0.039984,
+          "p95": 0.041503,
+          "min": 0.038153,
+          "max": 0.041753,
+          "stdev": 0.001238,
+          "status": "measured"
+        },
+        "stages": {
+          "planner": {
+            "samples": 8,
+            "mean": 0.0,
+            "median": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "stdev": 0.0,
+            "status": "measured"
+          },
+          "research": {
+            "samples": 8,
+            "mean": 0.0,
+            "median": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "stdev": 0.0,
+            "status": "measured"
+          },
+          "editor": {
+            "samples": 8,
+            "mean": 0.0,
+            "median": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "stdev": 0.0,
+            "status": "measured"
+          },
+          "search_network": {
+            "samples": 8,
+            "mean": 0.05,
+            "median": 0.05,
+            "p50": 0.05,
+            "p95": 0.05,
+            "min": 0.05,
+            "max": 0.05,
+            "stdev": 0.0,
+            "status": "measured"
+          }
+        },
+        "memory_peak_kb": {
+          "max": 346.7,
+          "mean": 343.4,
+          "samples": 8
+        },
+        "errors": []
+      },
+      "medium": {
+        "runs": 8,
+        "successful_completions": 8,
+        "failed_executions": 0,
+        "success_rate": 1.0,
+        "retry_count": 0,
+        "end_to_end": {
+          "samples": 8,
+          "mean": 0.040793,
+          "median": 0.041016,
+          "p50": 0.041016,
+          "p95": 0.041481,
+          "min": 0.039649,
+          "max": 0.041639,
+          "stdev": 0.000642,
+          "status": "measured"
+        },
+        "successful_end_to_end": {
+          "samples": 8,
+          "mean": 0.040793,
+          "median": 0.041016,
+          "p50": 0.041016,
+          "p95": 0.041481,
+          "min": 0.039649,
+          "max": 0.041639,
+          "stdev": 0.000642,
+          "status": "measured"
+        },
+        "stages": {
+          "planner": {
+            "samples": 8,
+            "mean": 0.0,
+            "median": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "stdev": 0.0,
+            "status": "measured"
+          },
+          "research": {
+            "samples": 8,
+            "mean": 0.0,
+            "median": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "stdev": 0.0,
+            "status": "measured"
+          },
+          "editor": {
+            "samples": 8,
+            "mean": 0.00025,
+            "median": 0.0,
+            "p50": 0.0,
+            "p95": 0.001,
+            "min": 0.0,
+            "max": 0.001,
+            "stdev": 0.000463,
+            "status": "measured"
+          },
+          "search_network": {
+            "samples": 8,
+            "mean": 0.15,
+            "median": 0.15,
+            "p50": 0.15,
+            "p95": 0.15,
+            "min": 0.15,
+            "max": 0.15,
+            "stdev": 0.0,
+            "status": "measured"
+          }
+        },
+        "memory_peak_kb": {
+          "max": 344.4,
+          "mean": 338.4,
+          "samples": 8
+        },
+        "errors": []
+      },
+      "large": {
+        "runs": 8,
+        "successful_completions": 8,
+        "failed_executions": 0,
+        "success_rate": 1.0,
+        "retry_count": 0,
+        "end_to_end": {
+          "samples": 8,
+          "mean": 0.041529,
+          "median": 0.040949,
+          "p50": 0.040949,
+          "p95": 0.044146,
+          "min": 0.040175,
+          "max": 0.045189,
+          "stdev": 0.001663,
+          "status": "measured"
+        },
+        "successful_end_to_end": {
+          "samples": 8,
+          "mean": 0.041529,
+          "median": 0.040949,
+          "p50": 0.040949,
+          "p95": 0.044146,
+          "min": 0.040175,
+          "max": 0.045189,
+          "stdev": 0.001663,
+          "status": "measured"
+        },
+        "stages": {
+          "planner": {
+            "samples": 8,
+            "mean": 0.0,
+            "median": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "stdev": 0.0,
+            "status": "measured"
+          },
+          "research": {
+            "samples": 8,
+            "mean": 0.0,
+            "median": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "stdev": 0.0,
+            "status": "measured"
+          },
+          "editor": {
+            "samples": 8,
+            "mean": 0.0,
+            "median": 0.0,
+            "p50": 0.0,
+            "p95": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "stdev": 0.0,
+            "status": "measured"
+          },
+          "search_network": {
+            "samples": 8,
+            "mean": 0.3,
+            "median": 0.3,
+            "p50": 0.3,
+            "p95": 0.3,
+            "min": 0.3,
+            "max": 0.3,
+            "stdev": 0.0,
+            "status": "measured"
+          }
+        },
+        "memory_peak_kb": {
+          "max": 340.4,
+          "mean": 336.4,
+          "samples": 8
+        },
+        "errors": []
+      }
+    },
+    "database": {
+      "db_roundtrip": {
+        "samples": 24,
+        "mean": 0.007533,
+        "median": 0.006965,
+        "p50": 0.006965,
+        "p95": 0.007984,
+        "min": 0.00582,
+        "max": 0.02237,
+        "stdev": 0.003222,
+        "status": "measured"
+      },
+      "successful_writes": 24,
+      "attempted_writes": 24
+    },
+    "failure_scenarios": [
+      {
+        "name": "search failure",
+        "error": null,
+        "status": "complete",
+        "elapsed_seconds": 0.011397
+      },
+      {
+        "name": "llm timeout",
+        "error": "TimeoutError: simulated_ollama_timeout",
+        "status": "error",
+        "elapsed_seconds": 0.00766
+      },
+      {
+        "name": "invalid response",
+        "error": null,
+        "status": "complete_unstructured",
+        "elapsed_seconds": 0.009886
+      }
+    ],
+    "token_usage": {
+      "calls": 0,
+      "calls_with_usage": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "total_tokens": 0,
+      "model": null,
+      "status": "not_available_mocked",
+      "note": "Mocked agent stubs do not call Ollama, so token usage is not applicable. Live mode reports provider counts when available."
+    }
+  },
+  "limitations": [
+    "Mocked mode does not measure Ollama generation or live web-search latency.",
+    "P95 from small samples is unstable; sample size is reported with every metric.",
+    "SQLite persistence is not PostgreSQL performance.",
+    "No baseline-versus-optimized claim is made from mocked runs."
+  ]
+}

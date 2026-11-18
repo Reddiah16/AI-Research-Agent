@@ -1,0 +1,379 @@
+{
+  "generated_at": "2026-11-18T07:42:25+00:00",
+  "mode": "mocked",
+  "dataset": {
+    "filename": "golden_eval_v1.jsonl",
+    "sha256": "edacf9ec8225061ce4d47403301e73c4c06aad1fafb142c67243019cc8b8637e",
+    "version": "1.0.0",
+    "manifest": {
+      "case_count": 118,
+      "category_counts": {
+        "comparison": 21,
+        "conflicting_sources": 10,
+        "factual_research": 18,
+        "insufficient_evidence": 10,
+        "misleading_assumption": 10,
+        "multi_source_research": 19,
+        "recent_information": 10,
+        "technical_research": 20
+      },
+      "created_at": "2026-11-18T00:00:00Z",
+      "dataset": "golden_eval_v1.jsonl",
+      "difficulty_counts": {
+        "Difficult": 24,
+        "Easy": 40,
+        "Intermediate": 54
+      },
+      "generator": "benchmarks/build_golden_dataset.py",
+      "methodology": [
+        "Verified cases reuse only claims whose v3 status is 'verified'.",
+        "Reference URLs are copied from the v3 source registry; none are invented.",
+        "Synthetic behavioural cases have no reference answer or retrieval label.",
+        "Missing retrieval labels are reported as unavailable, never scored as zero."
+      ],
+      "provenance_counts": {
+        "synthetic": 40,
+        "verified_reference": 78
+      },
+      "retrieval_label_counts": {
+        "available": 78,
+        "unavailable": 40
+      },
+      "sha256": "edacf9ec8225061ce4d47403301e73c4c06aad1fafb142c67243019cc8b8637e",
+      "source_dataset": {
+        "filename": "benchmark_v3.json",
+        "sha256": "10a5ba16c400a1cac0040e4357df49d97fc09e258f006999df96c93df2ff2527",
+        "version": "3.0.0"
+      },
+      "version": "1.0.0"
+    },
+    "validation": {
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "G045: retrieval labels include non-verified sources",
+        "G046: retrieval labels include non-verified sources"
+      ],
+      "counts": {
+        "cases": 118,
+        "categories": {
+          "comparison": 21,
+          "conflicting_sources": 10,
+          "factual_research": 18,
+          "insufficient_evidence": 10,
+          "misleading_assumption": 10,
+          "multi_source_research": 19,
+          "recent_information": 10,
+          "technical_research": 20
+        },
+        "difficulties": {
+          "Difficult": 24,
+          "Easy": 40,
+          "Intermediate": 54
+        },
+        "provenance": {
+          "synthetic": 40,
+          "verified_reference": 78
+        },
+        "retrieval_labels": {
+          "available": 78,
+          "unavailable": 40
+        }
+      }
+    }
+  },
+  "retrieval": {
+    "fixture_cases_labelled": 20,
+    "fixture_cases_unlabelled": 40,
+    "perfect": {
+      "cases_total": 20,
+      "measured_cases": 20,
+      "excluded_cases": 0,
+      "excluded_case_ids": [],
+      "metrics": {
+        "recall@1": {
+          "mean": 0.5917,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "precision@1": {
+          "mean": 1.0,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "ndcg@1": {
+          "mean": 1.0,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "recall@3": {
+          "mean": 0.975,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "precision@3": {
+          "mean": 0.6667,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "ndcg@3": {
+          "mean": 1.0,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "recall@5": {
+          "mean": 1.0,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "precision@5": {
+          "mean": 0.42,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "ndcg@5": {
+          "mean": 1.0,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "recall@10": {
+          "mean": 1.0,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "precision@10": {
+          "mean": 0.21,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "ndcg@10": {
+          "mean": 1.0,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "mrr": {
+          "mean": 1.0,
+          "measured_cases": 20,
+          "status": "measured"
+        }
+      },
+      "methodology": "Means are computed over cases with ground-truth labels only. Cases without labels are excluded, not scored as zero."
+    },
+    "degraded": {
+      "cases_total": 20,
+      "measured_cases": 20,
+      "excluded_cases": 0,
+      "excluded_case_ids": [],
+      "metrics": {
+        "recall@1": {
+          "mean": 0.0,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "precision@1": {
+          "mean": 0.0,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "ndcg@1": {
+          "mean": 0.0,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "recall@3": {
+          "mean": 0.5917,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "precision@3": {
+          "mean": 0.3333,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "ndcg@3": {
+          "mean": 0.4329,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "recall@5": {
+          "mean": 0.8833,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "precision@5": {
+          "mean": 0.34,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "ndcg@5": {
+          "mean": 0.5907,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "recall@10": {
+          "mean": 0.8833,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "precision@10": {
+          "mean": 0.17,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "ndcg@10": {
+          "mean": 0.5907,
+          "measured_cases": 20,
+          "status": "measured"
+        },
+        "mrr": {
+          "mean": 0.5,
+          "measured_cases": 20,
+          "status": "measured"
+        }
+      },
+      "methodology": "Means are computed over cases with ground-truth labels only. Cases without labels are excluded, not scored as zero."
+    },
+    "unlabelled": {
+      "cases_total": 40,
+      "measured_cases": 0,
+      "excluded_cases": 40,
+      "excluded_case_ids": [
+        "G079",
+        "G080",
+        "G081",
+        "G082",
+        "G083",
+        "G084",
+        "G085",
+        "G086",
+        "G087",
+        "G088",
+        "G089",
+        "G090",
+        "G091",
+        "G092",
+        "G093",
+        "G094",
+        "G095",
+        "G096",
+        "G097",
+        "G098",
+        "G099",
+        "G100",
+        "G101",
+        "G102",
+        "G103",
+        "G104",
+        "G105",
+        "G106",
+        "G107",
+        "G108",
+        "G109",
+        "G110",
+        "G111",
+        "G112",
+        "G113",
+        "G114",
+        "G115",
+        "G116",
+        "G117",
+        "G118"
+      ],
+      "metrics": {
+        "recall@1": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "recall@3": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "recall@5": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "recall@10": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "precision@1": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "precision@3": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "precision@5": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "precision@10": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "ndcg@1": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "ndcg@3": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "ndcg@5": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "ndcg@10": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        },
+        "mrr": {
+          "mean": null,
+          "measured_cases": 0,
+          "status": "not_measurable"
+        }
+      },
+      "methodology": "Means are computed over cases with ground-truth labels only. Cases without labels are excluded, not scored as zero."
+    },
+    "checks": {
+      "perfect_recall_at_5_is_1": true,
+      "perfect_mrr_is_1": true,
+      "perfect_ndcg_at_5_is_1": true,
+      "degraded_mrr_below_perfect": true,
+      "unlabelled_cases_are_excluded": true,
+      "unlabelled_values_are_none": true
+    },
+    "all_checks_passed": true,
+    "label": "mocked_metric_validation_not_agent_quality"
+  },
+  "answer_quality": {
+    "status": "not_measured",
+    "reason": "Mocked mode validates metric plumbing only; it does not score agent answers.",
+    "weights": {
+      "faithfulness": 0.3,
+      "answer_relevance": 0.2,
+      "contextual_precision": 0.15,
+      "contextual_recall": 0.15,
+      "citation_support": 0.15,
+      "evidence_coverage": 0.05
+    }
+  },
+  "limitations": [
+    "Mocked fixtures test the metric implementation, not the live agent.",
+    "No Ollama, DuckDuckGo, or answer-generation result is used.",
+    "Do not present mocked numbers as benchmark quality."
+  ]
+}

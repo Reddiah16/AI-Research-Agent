@@ -1,0 +1,1289 @@
+{
+  "version": "1.0.0",
+  "created_at": "2026-11-12T00:00:00Z",
+  "description": "40-Question Evaluation Benchmark Dataset for AI Research Agent",
+  "methodology_disclaimer": "This dataset provides structural taxonomy, query metadata, provisional factual claims, and scoring rubrics. All ground truth claims are flagged with verification_status='requires_manual_reference_verification'. They must be verified by subject matter experts before being used as formal ground truth.",
+  "benchmark_questions": [
+    {
+      "id": "Q01",
+      "domain": "AI",
+      "difficulty": "Easy",
+      "task_type": "Explanation",
+      "topic": "Retrieval Augmented Generation architecture and core components",
+      "metadata": {
+        "domain_full_name": "Artificial Intelligence & LLMs",
+        "target_aspects": ["Chunking", "Vector Indexing", "Dense Retrieval", "Prompt Augmentation"],
+        "expected_source_domains": ["langchain.com", "llamaindex.ai", "arxiv.org"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims derived from canonical RAG architecture papers (Lewis et al., 2020). Requires manual verification against recent enterprise RAG patterns.",
+        "provisional_reference_claims": [
+          "RAG combines pre-trained parametric memory (LLM) with external non-parametric retrieval.",
+          "Core pipeline phases include document loading, semantic chunking, vector embedding, similarity retrieval, and generation prompt synthesis.",
+          "Vector databases or indices (e.g. FAISS, HNSW) provide dense vector retrieval based on distance metrics like cosine similarity."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Must focus directly on RAG system architecture rather than fine-tuning or model training.",
+          "completeness": "Must cover both retrieval and generation stages, highlighting chunking and indexing.",
+          "source_quality": "Expected citations to established AI documentation or research literature."
+        }
+      }
+    },
+    {
+      "id": "Q02",
+      "domain": "AI",
+      "difficulty": "Easy",
+      "task_type": "Explanation",
+      "topic": "Parameter Efficient Fine Tuning methods: LoRA and QLoRA",
+      "metadata": {
+        "domain_full_name": "Artificial Intelligence & LLMs",
+        "target_aspects": ["Low-Rank Adaptation", "Quantization", "Rank Decomposition", "VRAM Savings"],
+        "expected_source_domains": ["huggingface.co", "arxiv.org", "github.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on Hu et al. (LoRA, 2021) and Dettmers et al. (QLoRA, 2023).",
+        "provisional_reference_claims": [
+          "LoRA freezes base model weights and injects trainable rank decomposition matrices into transformer layers.",
+          "QLoRA quantizes the frozen base model to 4-bit NormalFloat (NF4) and uses double quantization and paged optimizers to reduce fine-tuning memory footprint.",
+          "Both methods achieve performance competitive with full parameter fine-tuning while training under 1% of total parameters."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Must explain low-rank decomposition and the memory benefits of quantization.",
+          "completeness": "Must differentiate LoRA and QLoRA while noting training trade-offs.",
+          "source_quality": "Expected citations to primary Hugging Face or paper repositories."
+        }
+      }
+    },
+    {
+      "id": "Q03",
+      "domain": "AI",
+      "difficulty": "Intermediate",
+      "task_type": "Comparison",
+      "topic": "Speculative Decoding vs Medusa for LLM inference acceleration",
+      "metadata": {
+        "domain_full_name": "Artificial Intelligence & LLMs",
+        "target_aspects": ["Draft Models", "Multi-Head Prediction", "Tree Verification", "Latency Trade-offs"],
+        "expected_source_domains": ["together.ai", "vllm.ai", "arxiv.org"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims derived from speculative decoding (Leviathan et al.) and Medusa (Cai et al.).",
+        "provisional_reference_claims": [
+          "Speculative decoding employs an auxiliary smaller draft model to generate candidate tokens which the target model verifies in parallel.",
+          "Medusa avoids a separate draft model by adding multiple decoding heads atop the target model to generate candidates simultaneously.",
+          "Speculative decoding requires managing two distinct models in memory, whereas Medusa adds parameters to a single model architecture."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Focus on inference latency acceleration mechanisms and architectural differences.",
+          "completeness": "Direct comparison across memory overhead, implementation complexity, and speedup ratios.",
+          "source_quality": "Citations to research literature or runtime implementation guides."
+        }
+      }
+    },
+    {
+      "id": "Q04",
+      "domain": "AI",
+      "difficulty": "Intermediate",
+      "task_type": "Comparison",
+      "topic": "vLLM PagedAttention vs Hugging Face TGI memory architectures",
+      "metadata": {
+        "domain_full_name": "Artificial Intelligence & LLMs",
+        "target_aspects": ["PagedAttention", "KV Cache Fragmentation", "Continuous Batching", "VRAM Allocation"],
+        "expected_source_domains": ["vllm.ai", "huggingface.co", "github.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on Kwon et al. (vLLM, 2023) and Hugging Face Text Generation Inference documentation.",
+        "provisional_reference_claims": [
+          "PagedAttention partitions the key-value (KV) cache into non-contiguous physical blocks, analogous to virtual memory paging in operating systems.",
+          "PagedAttention reduces memory waste from KV cache fragmentation to below 4%, enabling higher concurrency and throughput.",
+          "Hugging Face TGI utilizes token streaming and continuous batching with optimized FlashAttention and tensor parallelism."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Accurate explanation of KV cache management in GPU high-throughput serving.",
+          "completeness": "Clear contrast between paged memory allocation and conventional continuous tensor storage.",
+          "source_quality": "Authoritative engineering blogs or software repository documentation."
+        }
+      }
+    },
+    {
+      "id": "Q05",
+      "domain": "AI",
+      "difficulty": "Difficult",
+      "task_type": "Multi-Source",
+      "topic": "Agentic workflows using LangGraph vs AutoGen vs CrewAI",
+      "metadata": {
+        "domain_full_name": "Artificial Intelligence & LLMs",
+        "target_aspects": ["StateGraph", "Cyclic Workflows", "Actor Model", "Role-Playing Agents"],
+        "expected_source_domains": ["langchain-ai.github.io", "microsoft.github.io", "crewai.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims synthesizing official documentation of the three open-source agent frameworks.",
+        "provisional_reference_claims": [
+          "LangGraph models workflows as explicit cyclic computation graphs with shared, typed state transitions and checkpointing.",
+          "AutoGen (Microsoft) focuses on conversational, event-driven multi-agent systems using actor-like messaging abstractions.",
+          "CrewAI provides high-level role-based abstractions where agents take on personas, tasks, and team process structures."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Deep architectural analysis of orchestration primitives (graph vs conversation vs role-hierarchy).",
+          "completeness": "Covers state persistence, error recovery, branching control, and developer ergonomics.",
+          "source_quality": "Direct links to official framework docs or benchmark repositories."
+        }
+      }
+    },
+    {
+      "id": "Q06",
+      "domain": "AI",
+      "difficulty": "Difficult",
+      "task_type": "SOTA",
+      "topic": "Mixture of Depths and conditional computation in transformer architectures",
+      "metadata": {
+        "domain_full_name": "Artificial Intelligence & LLMs",
+        "target_aspects": ["Dynamic Routing", "Token Dropping", "Compute Budgeting", "FLOPs Optimization"],
+        "expected_source_domains": ["arxiv.org", "deepmind.google", "huggingface.co"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims derived from Raposo et al. (Google DeepMind, 2024).",
+        "provisional_reference_claims": [
+          "Mixture-of-Depths (MoD) allocates dynamic FLOPs per token by routing tokens to either participate in a layer's computations or skip it via residual connection.",
+          "A top-k gating router enforces a fixed total compute budget across tokens in a sequence.",
+          "MoD models achieve comparable training and inference loss with reduced compute per step compared to standard dense transformers."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Specific focus on conditional computation along the depth dimension rather than width (MoE).",
+          "completeness": "Explains gating mechanism, training stability, and inference latency trade-offs.",
+          "source_quality": "Cites Google DeepMind primary research papers."
+        }
+      }
+    },
+    {
+      "id": "Q07",
+      "domain": "AI",
+      "difficulty": "Intermediate",
+      "task_type": "Explanation",
+      "topic": "Direct Preference Optimization (DPO) vs RLHF with PPO",
+      "metadata": {
+        "domain_full_name": "Artificial Intelligence & LLMs",
+        "target_aspects": ["Preference Alignment", "Reward Modeling", "Policy Optimization", "Implicit Reward"],
+        "expected_source_domains": ["arxiv.org", "huggingface.co", "stanford.edu"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on Rafailov et al. (Stanford, 2023).",
+        "provisional_reference_claims": [
+          "RLHF with PPO requires training a separate reward model and updating the policy via online reinforcement learning.",
+          "DPO derives a closed-form substitution that directly optimizes the policy network on preference pairs without an explicit reward model.",
+          "DPO offers greater training stability and lower compute overhead, though RLHF remains relevant for complex iterative exploration."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Clear explanation of preference optimization mathematics and training pipelines.",
+          "completeness": "Balances training stability benefits with potential out-of-distribution generalization limits.",
+          "source_quality": "Stanford DPO paper and ML community post-training literature."
+        }
+      }
+    },
+    {
+      "id": "Q08",
+      "domain": "CC",
+      "difficulty": "Easy",
+      "task_type": "Explanation",
+      "topic": "Serverless computing advantages and cold start latency mitigations",
+      "metadata": {
+        "domain_full_name": "Cloud Computing & Systems",
+        "target_aspects": ["Cold Starts", "Provisioned Concurrency", "MicroVMs", "Scale-to-Zero"],
+        "expected_source_domains": ["aws.amazon.com", "cloud.google.com", "cncf.io"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims summarizing cloud architecture patterns from AWS Lambda and Google Cloud Run.",
+        "provisional_reference_claims": [
+          "Serverless architectures eliminate server management, billing only for compute time consumed with automatic scaling.",
+          "Cold starts occur when a function invocation requires provisioning a new execution environment (container or MicroVM).",
+          "Mitigation strategies include provisioned concurrency, container snapshotting (e.g. AWS Lambda SnapStart), lightweight runtimes, and keep-alive pingers."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Focuses on runtime initialization lifecycle and architectural mitigations.",
+          "completeness": "Covers both infrastructure-level mitigations and application-level packaging best practices.",
+          "source_quality": "Cloud provider whitepapers and architectural frameworks."
+        }
+      }
+    },
+    {
+      "id": "Q09",
+      "domain": "CC",
+      "difficulty": "Intermediate",
+      "task_type": "Comparison",
+      "topic": "Kubernetes vs HashiCorp Nomad for edge computing orchestration",
+      "metadata": {
+        "domain_full_name": "Cloud Computing & Systems",
+        "target_aspects": ["Footprint", "Scheduling Complexity", "Non-Containerized Workloads", "Edge Resources"],
+        "expected_source_domains": ["hashicorp.com", "kubernetes.io", "cncf.io"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on official Kubernetes and Nomad documentation.",
+        "provisional_reference_claims": [
+          "Nomad provides a single-binary orchestrator with a lightweight memory and compute footprint well-suited for constrained edge nodes.",
+          "Nomad natively supports non-containerized workloads (raw binaries, Java, QEMU) alongside containers.",
+          "Kubernetes provides a much broader ecosystem and cloud-native integration (CRDs, CSI, CNI), but with higher operational overhead (K3s/KubeEdge mitigate this)."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Specific context of resource-constrained and distributed edge computing.",
+          "completeness": "Compares binary size, operational complexity, driver flexibility, and control plane requirements.",
+          "source_quality": "HashiCorp and CNCF edge working group resources."
+        }
+      }
+    },
+    {
+      "id": "Q10",
+      "domain": "CC",
+      "difficulty": "Intermediate",
+      "task_type": "Multi-Source",
+      "topic": "FinOps best practices for multi-cloud Kubernetes clusters",
+      "metadata": {
+        "domain_full_name": "Cloud Computing & Systems",
+        "target_aspects": ["Cost Allocation", "Spot Instances", "Cluster Autoscaling", "Karpenter"],
+        "expected_source_domains": ["finops.org", "karpenter.sh", "kubecost.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims summarizing FinOps Foundation Kubernetes guidelines.",
+        "provisional_reference_claims": [
+          "FinOps requires granular cost allocation mapping Kubernetes namespaces, pods, and labels to business units.",
+          "Just-in-time node provisioning (e.g. via Karpenter) minimizes idle compute compared to static node groups.",
+          "Workload rightsizing using Vertical Pod Autoscaler (VPA) and spot instance interruption handling are foundational cost optimization levers."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Focuses on cloud financial management within containerized multi-cloud infrastructure.",
+          "completeness": "Addresses culture/visibility, allocation tooling (Kubecost/OpenCost), and automated scaling.",
+          "source_quality": "FinOps Foundation and open-source project documentation."
+        }
+      }
+    },
+    {
+      "id": "Q11",
+      "domain": "CC",
+      "difficulty": "Difficult",
+      "task_type": "Comparison",
+      "topic": "eBPF vs sidecar proxies for service mesh observability and networking",
+      "metadata": {
+        "domain_full_name": "Cloud Computing & Systems",
+        "target_aspects": ["Kernel Bypass", "Envoy Sidecar", "Cilium", "Ambient Mesh"],
+        "expected_source_domains": ["cilium.io", "istio.io", "ebpf.io"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims synthesized from Cilium, Istio Ambient, and Linux kernel eBPF publications.",
+        "provisional_reference_claims": [
+          "Traditional service meshes inject Envoy sidecars per pod, adding memory overhead, CPU consumption, and multiple TCP stack traversals.",
+          "eBPF enables network routing and observability directly in the Linux kernel at the socket layer, bypassing TCP/IP stack overhead without application sidecars.",
+          "eBPF excels at L3/L4 networking and transparent telemetry, while L7 parsing (HTTP headers, mTLS termination) still often requires specialized proxy logic (e.g. node-level ztunnel)."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Deep dive into Linux kernel networking vs user-space proxy architectures.",
+          "completeness": "Contrasts L4 performance gains with L7 policy and security isolation trade-offs.",
+          "source_quality": "Cilium, Istio, and CNCF technical papers."
+        }
+      }
+    },
+    {
+      "id": "Q12",
+      "domain": "CC",
+      "difficulty": "Difficult",
+      "task_type": "SOTA",
+      "topic": "Confidential computing hardware progress in public clouds: AMD SEV-SNP vs Intel TDX",
+      "metadata": {
+        "domain_full_name": "Cloud Computing & Systems",
+        "target_aspects": ["Trusted Execution Environments", "Remote Attestation", "Hypervisor Isolation", "Memory Encryption"],
+        "expected_source_domains": ["amd.com", "intel.com", "cloud.google.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on AMD EPYC SEV-SNP specifications and Intel Trust Domain Extensions whitepapers.",
+        "provisional_reference_claims": [
+          "Confidential computing protects data in-use by encrypting CPU memory registers and enforcing hardware-backed hypervisor isolation.",
+          "AMD SEV-SNP introduces Secure Nested Paging to prevent hypervisor-induced memory replay and memory-remapping attacks.",
+          "Intel TDX isolates virtual machines into Trust Domains (TDs) managed by a CPU-attested module called the Intel TDX Module."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Hardware security architecture and hypervisor threat boundary modeling.",
+          "completeness": "Explains cryptographic memory keys, attestation protocols, and virtualization overhead.",
+          "source_quality": "Hardware vendor architecture manuals and cloud security whitepapers."
+        }
+      }
+    },
+    {
+      "id": "Q13",
+      "domain": "CS",
+      "difficulty": "Easy",
+      "task_type": "Explanation",
+      "topic": "Zero Trust Architecture core principles and NIST SP 800-207",
+      "metadata": {
+        "domain_full_name": "Cybersecurity & Privacy",
+        "target_aspects": ["Continuous Verification", "Least Privilege", "Microsegmentation", "Assume Breach"],
+        "expected_source_domains": ["nist.gov", "cisa.gov", "microsoft.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on NIST Special Publication 800-207.",
+        "provisional_reference_claims": [
+          "Zero Trust operates under the core tenet of 'never trust, always verify', treating internal network traffic as untrusted.",
+          "NIST SP 800-207 defines three core components: Policy Engine (PE), Policy Administrator (PA), and Policy Enforcement Point (PEP).",
+          "Access decisions are dynamic and context-aware, evaluating device health, user identity, location, and data sensitivity."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Clear focus on NIST 800-207 architectural tenants and enforcement mechanisms.",
+          "completeness": "Must cover continuous authentication, microsegmentation, and policy engines.",
+          "source_quality": "Government standards (NIST/CISA) and primary cybersecurity publications."
+        }
+      }
+    },
+    {
+      "id": "Q14",
+      "domain": "CS",
+      "difficulty": "Intermediate",
+      "task_type": "Comparison",
+      "topic": "Passkeys and WebAuthn vs Traditional Multi-Factor Authentication",
+      "metadata": {
+        "domain_full_name": "Cybersecurity & Privacy",
+        "target_aspects": ["FIDO2", "Public-Key Cryptography", "Phishing Resistance", "Credential Sync"],
+        "expected_source_domains": ["fidoalliance.org", "w3.org", "yubico.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on W3C Web Authentication specification and FIDO2 standards.",
+        "provisional_reference_claims": [
+          "Passkeys use asymmetric public-key cryptography where the private key remains secure on the user device and never crosses the network.",
+          "Passkeys provide cryptographic origin binding, making them immune to credential phishing and adversary-in-the-middle attacks.",
+          "Traditional MFA (SMS, OTP, push notifications) is vulnerable to SIM swapping, prompt fatigue, and reverse-proxy phishing (e.g. Evilginx)."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Direct comparison of cryptographic security models and attack resilience.",
+          "completeness": "Covers usability, credential synchronization across ecosystems, and device recovery trade-offs.",
+          "source_quality": "W3C and FIDO Alliance documentation."
+        }
+      }
+    },
+    {
+      "id": "Q15",
+      "domain": "CS",
+      "difficulty": "Intermediate",
+      "task_type": "Multi-Source",
+      "topic": "Software Supply Chain Security: SBOMs, Sigstore, and SLSA framework",
+      "metadata": {
+        "domain_full_name": "Cybersecurity & Privacy",
+        "target_aspects": ["CycloneDX/SPDX", "Cosign Attestations", "SLSA Levels", "Provenance"],
+        "expected_source_domains": ["slsa.dev", "sigstore.dev", "openssf.org"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims from OpenSSF, Sigstore, and Supply-chain Levels for Software Artifacts (SLSA).",
+        "provisional_reference_claims": [
+          "Software Bills of Materials (SBOMs) standardise component manifests (SPDX, CycloneDX) for vulnerability auditing.",
+          "Sigstore provides keyless cryptographic signing and public transparency logs (Rekor, Fulcio) for container images and binaries.",
+          "The SLSA framework establishes incremental security tracks (SLSA 1–4) guaranteeing build integrity and tamper-proof provenance."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Holistic view of supply chain protection across code, dependencies, build, and artifacts.",
+          "completeness": "Covers signing, transparency logs, provenance verification, and CI/CD policy enforcement.",
+          "source_quality": "OpenSSF and SLSA official guidelines."
+        }
+      }
+    },
+    {
+      "id": "Q16",
+      "domain": "CS",
+      "difficulty": "Difficult",
+      "task_type": "Comparison",
+      "topic": "Post-quantum cryptography standards: ML-KEM vs Dilithium vs Falcon",
+      "metadata": {
+        "domain_full_name": "Cybersecurity & Privacy",
+        "target_aspects": ["Lattice-Based Cryptography", "NIST PQC Standardization", "Key Sizes", "Signature Performance"],
+        "expected_source_domains": ["nist.gov", "cloudflare.com", "csrc.nist.gov"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on NIST Post-Quantum Cryptography Standardization project (FIPS 203, 204, 205).",
+        "provisional_reference_claims": [
+          "ML-KEM (derived from Kyber) is standardized as FIPS 203 for post-quantum key encapsulation based on module lattices.",
+          "ML-DSA (Dilithium) is standardized as FIPS 204 for general-purpose digital signatures based on Module-LWE.",
+          "Falcon provides smaller signatures than Dilithium using NTRU lattices, but requires complex constant-time floating-point arithmetic."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Accurate cryptographic classification (KEM vs signature schemes) and lattice mathematics principles.",
+          "completeness": "Details public key sizes, ciphertext overhead, and memory/computation trade-offs in TLS.",
+          "source_quality": "NIST FIPS drafts and academic cryptographic analysis."
+        }
+      }
+    },
+    {
+      "id": "Q17",
+      "domain": "CS",
+      "difficulty": "Difficult",
+      "task_type": "SOTA",
+      "topic": "AI-assisted vulnerability discovery and automated patch generation",
+      "metadata": {
+        "domain_full_name": "Cybersecurity & Privacy",
+        "target_aspects": ["LLM Fuzzing", "Static Analysis", "Automated Program Repair", "AI Cyber Challenge"],
+        "expected_source_domains": ["darpa.mil", "googleprojectzero.blogspot.com", "arxiv.org"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims from DARPA AIxCC and automated software repair research.",
+        "provisional_reference_claims": [
+          "LLM-guided fuzzing generates grammatically valid seed inputs and edge-case test harnesses targeting hard-to-reach code paths.",
+          "Automated Program Repair (APR) leverages code models to synthesize candidate patches for memory safety and logic vulnerabilities.",
+          "Key challenges include regression avoidance, hallucinated fixes that introduce secondary security flaws, and semantic validation."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Current technological frontier of machine learning applied to offensive and defensive security.",
+          "completeness": "Covers both detection (fuzzing/symbolic execution) and remediation (patch synthesis/validation).",
+          "source_quality": "DARPA, Project Zero, or top security conference papers (USENIX, IEEE S&P)."
+        }
+      }
+    },
+    {
+      "id": "Q18",
+      "domain": "DE",
+      "difficulty": "Easy",
+      "task_type": "Explanation",
+      "topic": "Apache Iceberg table format architecture and metadata layers",
+      "metadata": {
+        "domain_full_name": "Data Engineering & Databases",
+        "target_aspects": ["Metadata Files", "Manifest Lists", "Manifest Files", "Snapshot Isolation"],
+        "expected_source_domains": ["iceberg.apache.org", "tabular.io", "databricks.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on Apache Iceberg official architectural specification.",
+        "provisional_reference_claims": [
+          "Iceberg represents tables as a tree of metadata files, decoupling table state from physical directory listings in object storage.",
+          "The metadata tree consists of: Iceberg Catalog pointing to current Metadata File -> Manifest List -> Manifest Files -> Data Files (Parquet/ORC).",
+          "Every write operation creates a discrete snapshot, enabling ACID transactions, time travel queries, and schema evolution."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Precise structural explanation of the three-tier metadata tree architecture.",
+          "completeness": "Covers partition evolution, hidden partitioning, and snapshot management.",
+          "source_quality": "Apache Iceberg documentation and maintainer engineering blogs."
+        }
+      }
+    },
+    {
+      "id": "Q19",
+      "domain": "DE",
+      "difficulty": "Intermediate",
+      "task_type": "Comparison",
+      "topic": "Delta Lake vs Apache Iceberg vs Apache Hudi feature comparison",
+      "metadata": {
+        "domain_full_name": "Data Engineering & Databases",
+        "target_aspects": ["ACID Log", "Time Travel", "Streaming Upserts", "Catalog Portability"],
+        "expected_source_domains": ["delta.io", "iceberg.apache.org", "hudi.apache.org"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims synthesizing open lakehouse table format specifications.",
+        "provisional_reference_claims": [
+          "Delta Lake utilizes a forward transaction log (_delta_log) with Parquet checkpoints, strongly integrated with Apache Spark.",
+          "Iceberg utilizes snapshot-based metadata trees designed for engine-neutrality (Trino, Flink, Spark, Snowflake, BigQuery).",
+          "Hudi is optimized for incremental streaming upserts and change-data-capture with Copy-on-Write and Merge-on-Read table types."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Objective architectural comparison of the top three open table formats.",
+          "completeness": "Contrasts write protocols, streaming support, metadata overhead, and engine interoperability.",
+          "source_quality": "Official project docs and neutral benchmark studies."
+        }
+      }
+    },
+    {
+      "id": "Q20",
+      "domain": "DE",
+      "difficulty": "Intermediate",
+      "task_type": "Comparison",
+      "topic": "ClickHouse vs DuckDB for analytical query processing",
+      "metadata": {
+        "domain_full_name": "Data Engineering & Databases",
+        "target_aspects": ["Distributed OLAP", "In-Process OLAP", "Vectorized Execution", "Data Storage"],
+        "expected_source_domains": ["clickhouse.com", "duckdb.org", "motherduck.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims derived from ClickHouse and DuckDB architectural documentation.",
+        "provisional_reference_claims": [
+          "ClickHouse is a distributed, client-server columnar database engineered for multi-node analytical processing over petabyte-scale datasets.",
+          "DuckDB is an embeddable, in-process analytical database (the 'SQLite for analytics') running inside the host application process without server overhead.",
+          "Both engines feature vectorized execution, but ClickHouse targets enterprise clusters while DuckDB excels in single-node data science and local pipelines."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Clear contrast between distributed OLAP cluster design and embedded in-process processing.",
+          "completeness": "Covers execution model, memory footprint, deployment topologies, and query latency.",
+          "source_quality": "ClickHouse and DuckDB engineering documentation."
+        }
+      }
+    },
+    {
+      "id": "Q21",
+      "domain": "DE",
+      "difficulty": "Difficult",
+      "task_type": "Multi-Source",
+      "topic": "Real-time streaming lakehouses using Apache Flink and Iceberg",
+      "metadata": {
+        "domain_full_name": "Data Engineering & Databases",
+        "target_aspects": ["Streaming Ingest", "Upsert Semantics", "Small Files Compaction", "Watermarking"],
+        "expected_source_domains": ["flink.apache.org", "iceberg.apache.org", "tabular.io"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims on Apache Flink Iceberg connector architectures.",
+        "provisional_reference_claims": [
+          "Flink writes stream records to Iceberg via continuous streaming commits driven by Flink checkpoints.",
+          "Streaming ingestion risks creating thousands of small metadata and data files, requiring asynchronous table maintenance (compaction, snapshot expiration).",
+          "Iceberg equality delete files allow Flink to execute low-latency CDC upserts without full table rewrites."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Focus on the real-time stream-table duality in lakehouse architectures.",
+          "completeness": "Explains checkpoint coordination, write modes, small file compaction, and CDC handling.",
+          "source_quality": "Apache Flink and Iceberg connector documentation."
+        }
+      }
+    },
+    {
+      "id": "Q22",
+      "domain": "DE",
+      "difficulty": "Difficult",
+      "task_type": "SOTA",
+      "topic": "Vector database indexing algorithms: HNSW vs DiskANN vs ScaNN",
+      "metadata": {
+        "domain_full_name": "Data Engineering & Databases",
+        "target_aspects": ["Graph Indexing", "Disk-Optimized Search", "Product Quantization", "Anisotropic Quantization"],
+        "expected_source_domains": ["arxiv.org", "github.com", "microsoft.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on Malkov & Yashunin (HNSW), Subramanya et al. (DiskANN), and Guo et al. (ScaNN).",
+        "provisional_reference_claims": [
+          "HNSW constructs hierarchical proximity graphs in RAM for fast search, but suffers from high memory consumption at billion-scale.",
+          "DiskANN compresses vectors in RAM while storing a single-layer Vamana graph on SSDs, drastically lowering memory requirements.",
+          "Google ScaNN uses anisotropic vector quantization that penalizes orthogonal quantization error less than parallel error, enhancing maximum inner product search accuracy."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Deep mathematical and system architectural comparison of vector indexing paradigms.",
+          "completeness": "Covers recall vs QPS trade-offs, RAM vs SSD economics, and quantization mechanisms.",
+          "source_quality": "Original research papers and vector database engineering benchmarks."
+        }
+      }
+    },
+    {
+      "id": "Q23",
+      "domain": "ET",
+      "difficulty": "Easy",
+      "task_type": "Explanation",
+      "topic": "Solid-state battery technology advantages over lithium-ion cells",
+      "metadata": {
+        "domain_full_name": "Emerging & Quantum Technologies",
+        "target_aspects": ["Solid Electrolyte", "Energy Density", "Thermal Runaway", "Dendrite Formation"],
+        "expected_source_domains": ["nature.com", "energy.gov", "quantumscape.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims derived from battery research literature (DOE, Nature Materials).",
+        "provisional_reference_claims": [
+          "Solid-state batteries replace volatile liquid organic electrolytes with solid ceramic, sulfide, or polymer electrolytes.",
+          "Eliminating flammable liquid electrolytes significantly reduces thermal runaway risk and fire hazards.",
+          "Solid-state cells enable pure lithium-metal anodes, substantially boosting volumetric energy density."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Focus on electrochemical differences and safety advantages.",
+          "completeness": "Covers energy density, charging speed, manufacturing scaling challenges, and operating temperature.",
+          "source_quality": "Department of Energy reports and peer-reviewed material science journals."
+        }
+      }
+    },
+    {
+      "id": "Q24",
+      "domain": "ET",
+      "difficulty": "Intermediate",
+      "task_type": "Comparison",
+      "topic": "Superconducting qubits vs Neutral atom quantum computing",
+      "metadata": {
+        "domain_full_name": "Emerging & Quantum Technologies",
+        "target_aspects": ["Coherence Time", "Gate Fidelity", "Cryogenics", "Optical Tweezers"],
+        "expected_source_domains": ["ibm.com", "quera.com", "nature.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims comparing IBM/Google superconducting architectures against QuEra/Harvard neutral atom systems.",
+        "provisional_reference_claims": [
+          "Superconducting qubits rely on lithographed Josephson junctions operating in dilution refrigerators near millikelvin temperatures.",
+          "Neutral atom processors trap neutral atoms (e.g. Rubidium) in vacuum using optical laser tweezers, exciting Rydberg states for entanglement.",
+          "Superconducting systems feature rapid gate speeds but limited physical connectivity; neutral atoms offer all-to-all reconfigurable qubit arrays and longer coherence times."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Accurate physical and operational comparison of the two quantum computing modalities.",
+          "completeness": "Contrasts gate speeds, coherence duration, scaling hurdles, and cryogenics complexity.",
+          "source_quality": "IBM Quantum, QuEra publications, and IEEE/Nature Quantum papers."
+        }
+      }
+    },
+    {
+      "id": "Q25",
+      "domain": "ET",
+      "difficulty": "Intermediate",
+      "task_type": "SOTA",
+      "topic": "Commercial fusion energy approaches: Tokamak vs Stellarator vs Magnetized Target",
+      "metadata": {
+        "domain_full_name": "Emerging & Quantum Technologies",
+        "target_aspects": ["Magnetic Confinement", "Plasma Stability", "High-Temperature Superconductors", "Q-Factor"],
+        "expected_source_domains": ["iter.org", "cfs.energy", "helionenergy.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims summarizing commercial and research fusion reactor projects.",
+        "provisional_reference_claims": [
+          "Tokamaks (e.g. ITER, Commonwealth Fusion Systems) confine plasma in a toroidal chamber using external magnets and an induced plasma current.",
+          "Stellarators (e.g. Wendelstein 7-X) use complex twisted 3D modular coils to stabilize plasma continuously without an internal current.",
+          "Private fusion companies utilize high-temperature superconducting (HTS) magnets (REBCO) to achieve higher magnetic field strength in smaller reactor volumes."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Plasma confinement physics and private sector commercialization paths.",
+          "completeness": "Compares magnet technologies, steady-state operation, tritium breeding, and net energy gain (Q > 1).",
+          "source_quality": "ITER project documentation and major fusion enterprise publications."
+        }
+      }
+    },
+    {
+      "id": "Q26",
+      "domain": "ET",
+      "difficulty": "Difficult",
+      "task_type": "Multi-Source",
+      "topic": "Neuromorphic computing hardware architectures: Intel Loihi 2 vs SpiNNaker 2",
+      "metadata": {
+        "domain_full_name": "Emerging & Quantum Technologies",
+        "target_aspects": ["Spiking Neural Networks", "Event-Driven Processing", "Energy Efficiency", "Asynchronous Circuits"],
+        "expected_source_domains": ["intel.com", "nature.com", "ieee.org"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on Intel Labs Loihi 2 papers and SpiNNaker 2 architecture specifications.",
+        "provisional_reference_claims": [
+          "Neuromorphic processors mimic biological neural circuits using event-driven, asynchronous spiking neural networks (SNNs).",
+          "Intel Loihi 2 features fully programmable neuron models with generalized microcode and graded spikes on Intel 4 process technology.",
+          "SpiNNaker 2 combines massive parallel ARM cores with hardware accelerators for exponential functions and synaptic plasticity."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Focus on asynchronous neuromorphic compute principles and spike-based communication.",
+          "completeness": "Contrasts analog/digital implementation, programmable neuron models, and ultra-low power edge deployment.",
+          "source_quality": "Intel Labs and academic neuromorphic computing consortia."
+        }
+      }
+    },
+    {
+      "id": "Q27",
+      "domain": "ET",
+      "difficulty": "Difficult",
+      "task_type": "SOTA",
+      "topic": "Silicon photonics for inter-chip interconnects in AI compute clusters",
+      "metadata": {
+        "domain_full_name": "Emerging & Quantum Technologies",
+        "target_aspects": ["Co-Packaged Optics", "Optical Transceivers", "Bandwidth Density", "Thermal Dissipation"],
+        "expected_source_domains": ["ieee.org", "tsmc.com", "ayarlabs.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims derived from semiconductor packaging and optical interconnect literature.",
+        "provisional_reference_claims": [
+          "Electrical interconnects (copper traces) encounter severe physical limits in attenuation, signal integrity, and power dissipation at high frequencies (>100 Gbps).",
+          "Silicon photonics integrates optical transceivers directly with compute silicon using Co-Packaged Optics (CPO) or optical I/O chiplets.",
+          "Optical interconnects increase bandwidth density by an order of magnitude while cutting latency and energy consumption per bit."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Addresses bandwidth wall in modern scale-up and scale-out GPU/TPU AI clusters.",
+          "completeness": "Covers CPO vs pluggable optics, manufacturing integration challenges, and laser durability.",
+          "source_quality": "IEEE Spectrum, TSMC, and major optical chiplet research papers."
+        }
+      }
+    },
+    {
+      "id": "Q28",
+      "domain": "SE",
+      "difficulty": "Easy",
+      "task_type": "Explanation",
+      "topic": "Event-Driven Architecture: Event sourcing vs CQRS patterns",
+      "metadata": {
+        "domain_full_name": "Software Architecture & DevOps",
+        "target_aspects": ["Append-Only Log", "Read/Write Model Separation", "Eventual Consistency", "Event Store"],
+        "expected_source_domains": ["martinfowler.com", "microsoft.com", "aws.amazon.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on Martin Fowler architectural patterns.",
+        "provisional_reference_claims": [
+          "Event Sourcing persists the state of an application as a sequential, append-only log of immutable domain events.",
+          "Command Query Responsibility Segregation (CQRS) separates data modification (commands) from data retrieval (queries) into distinct models.",
+          "While often paired, CQRS can be implemented without Event Sourcing, and Event Sourcing frequently leverages CQRS to construct query-optimized read views."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Distinguishes between event persistence and read/write model segregation.",
+          "completeness": "Addresses eventual consistency, event replay, schema versioning, and operational complexity.",
+          "source_quality": "Established software architecture references (Fowler, Microsoft Architecture Guides)."
+        }
+      }
+    },
+    {
+      "id": "Q29",
+      "domain": "SE",
+      "difficulty": "Intermediate",
+      "task_type": "Comparison",
+      "topic": "gRPC vs REST vs GraphQL for high-throughput internal microservices",
+      "metadata": {
+        "domain_full_name": "Software Architecture & DevOps",
+        "target_aspects": ["Protocol Buffers", "HTTP/2 Multiplexing", "Over-Fetching", "Payload Serialization"],
+        "expected_source_domains": ["grpc.io", "graphql.org", "cloudflare.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims summarizing microservice API communication protocols.",
+        "provisional_reference_claims": [
+          "gRPC uses binary Protocol Buffers serialization over HTTP/2 transport, providing compact payloads, strong typing, and duplex streaming.",
+          "REST uses standard HTTP verbs and JSON/XML payloads, maximizing public client compatibility and HTTP caching at the cost of larger payload overhead.",
+          "GraphQL eliminates over- and under-fetching by allowing clients to specify exact response shapes, but introduces query parsing complexity in internal high-throughput services."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Focus on high-throughput east-west microservice traffic requirements.",
+          "completeness": "Compares serialization speed, CPU overhead, streaming capabilities, and debugging tooling.",
+          "source_quality": "Official project documentation and engineering postmortems."
+        }
+      }
+    },
+    {
+      "id": "Q30",
+      "domain": "SE",
+      "difficulty": "Intermediate",
+      "task_type": "Multi-Source",
+      "topic": "Database branching and ephemeral environments for developer workflows",
+      "metadata": {
+        "domain_full_name": "Software Architecture & DevOps",
+        "target_aspects": ["Copy-on-Write", "Isolated Previews", "Schema Migrations", "Neon/PlanetScale"],
+        "expected_source_domains": ["neon.tech", "planetscale.com", "supabase.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims synthesized from serverless Postgres and MySQL branching platforms.",
+        "provisional_reference_claims": [
+          "Database branching creates lightweight, instantaneous copies of production schemas and data using Copy-on-Write (CoW) storage.",
+          "Ephemeral preview environments spin up isolated database branches per pull request, enabling safe integration testing without staging contamination.",
+          "Schema changes can be validated and merged non-destructively through automated migration deployment pipelines."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Focuses on modern CI/CD developer experience and database virtualization.",
+          "completeness": "Covers data sanitization/masking, storage virtualization mechanics, and cleanup lifecycle.",
+          "source_quality": "Modern database architecture engineering blogs (Neon, PlanetScale)."
+        }
+      }
+    },
+    {
+      "id": "Q31",
+      "domain": "SE",
+      "difficulty": "Difficult",
+      "task_type": "Comparison",
+      "topic": "Rust vs Go for building high-performance distributed networking engines",
+      "metadata": {
+        "domain_full_name": "Software Architecture & DevOps",
+        "target_aspects": ["Memory Safety without GC", "Goroutines", "Zero-Cost Abstractions", "Tail Latency"],
+        "expected_source_domains": ["rust-lang.org", "go.dev", "cloudflare.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on Cloudflare, Discord, and systems engineering benchmarks.",
+        "provisional_reference_claims": [
+          "Go provides rapid compilation, developer productivity, and lightweight concurrency via goroutines and channels, but relies on a garbage collector that can introduce p99 tail latency spikes.",
+          "Rust enforces memory safety at compile-time via ownership and borrow-checker rules, eliminating GC pauses and enabling deterministic memory layout and zero-cost abstractions.",
+          "Rust delivers superior raw throughput and predictable tail latency for core proxies, whereas Go accelerates distributed systems tooling where development velocity is prioritized."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Rigorous systems engineering comparison focused on networking engines and tail latency.",
+          "completeness": "Covers concurrency runtimes, compiler guarantees, binary footprints, and maintenance overhead.",
+          "source_quality": "Production systems case studies (Discord, Cloudflare, Fly.io)."
+        }
+      }
+    },
+    {
+      "id": "Q32",
+      "domain": "SE",
+      "difficulty": "Difficult",
+      "task_type": "SOTA",
+      "topic": "WebAssembly (Wasm) in serverless and edge compute runtimes: Wasmtime vs WasmEdge",
+      "metadata": {
+        "domain_full_name": "Software Architecture & DevOps",
+        "target_aspects": ["WASI", "Component Model", "Sandbox Isolation", "Cold Start Under 1ms"],
+        "expected_source_domains": ["bytecodealliance.org", "wasmedge.org", "cncf.io"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims from Bytecode Alliance and CNCF Wasm working group specifications.",
+        "provisional_reference_claims": [
+          "WebAssembly runtimes offer memory-safe, capability-based sandboxing with near-instant (<1ms) cold starts, bypassing Linux container startup overhead.",
+          "Wasmtime (Bytecode Alliance) prioritizes strict standards compliance, Cranelift JIT compilation, and the Wasm Component Model.",
+          "WasmEdge (CNCF) is optimized for edge AI and serverless microservices with extensions for TensorFlow, PyTorch, and LLM acceleration."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Server-side and edge Wasm execution environments and WASI system interfaces.",
+          "completeness": "Covers JIT/AOT compilation, memory capability isolation, edge AI extensions, and tooling maturity.",
+          "source_quality": "Bytecode Alliance and CNCF official project documentation."
+        }
+      }
+    },
+    {
+      "id": "Q33",
+      "domain": "AI",
+      "difficulty": "Easy",
+      "task_type": "Explanation",
+      "topic": "Function calling and tool use mechanisms in modern LLMs",
+      "metadata": {
+        "domain_full_name": "Artificial Intelligence & LLMs",
+        "target_aspects": ["JSON Schema", "Grammar-Constrained Decoding", "Tool Dispatch", "Multi-Turn Tool Execution"],
+        "expected_source_domains": ["ollama.com", "openai.com", "huggingface.co"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims from LLM tool-use engineering papers and framework docs.",
+        "provisional_reference_claims": [
+          "Function calling formats available tools into JSON schemas injected into system prompts or special tool-call token sequences.",
+          "Modern runtimes employ constrained decoding (context-free grammars or JSON schema masks) to guarantee syntactic validity of generated tool arguments.",
+          "The execution engine intercepts the tool call, executes the function locally, and returns outputs back to the model for final synthesis."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Focus on the end-to-end mechanism of tool definition, constrained decoding, and execution feedback.",
+          "completeness": "Explains schema definition, model output formatting, and recursive multi-turn execution.",
+          "source_quality": "Ollama, OpenAI, and open-source model tool calling documentation."
+        }
+      }
+    },
+    {
+      "id": "Q34",
+      "domain": "AI",
+      "difficulty": "Intermediate",
+      "task_type": "SOTA",
+      "topic": "Open-weights reasoning models: DeepSeek-R1 vs QwQ vs OpenAI o1 architecture",
+      "metadata": {
+        "domain_full_name": "Artificial Intelligence & LLMs",
+        "target_aspects": ["Incentivized Chain-of-Thought", "Reinforcement Learning with Verifiable Rewards", "Test-Time Compute", "Distillation"],
+        "expected_source_domains": ["deepseek.com", "qwenlm.github.io", "openai.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on DeepSeek-R1 technical report and Qwen QwQ announcements.",
+        "provisional_reference_claims": [
+          "Reasoning models scale test-time compute by generating extensive internal chain-of-thought tokens prior to providing the final answer.",
+          "DeepSeek-R1 demonstrated that large-scale reinforcement learning (via GRPO) with rule-based verification induces self-reflection and reasoning without supervised fine-tuning.",
+          "Reasoning patterns can be distilled into smaller dense architectures to accelerate inference on commodity hardware."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Analysis of test-time compute scaling and verifiable reinforcement learning reward functions.",
+          "completeness": "Covers pure RL emergence, distillation to smaller models, and prompt-injection risks in reasoning traces.",
+          "source_quality": "Technical reports and primary research releases from DeepSeek and Qwen teams."
+        }
+      }
+    },
+    {
+      "id": "Q35",
+      "domain": "CC",
+      "difficulty": "Intermediate",
+      "task_type": "Multi-Source",
+      "topic": "Multi-tenant isolation strategies in containerized environments",
+      "metadata": {
+        "domain_full_name": "Cloud Computing & Systems",
+        "target_aspects": ["gVisor", "Kata Containers", "Linux Namespaces", "Seccomp Profiles"],
+        "expected_source_domains": ["gvisor.dev", "katacontainers.io", "kubernetes.io"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on container runtime security documentation.",
+        "provisional_reference_claims": [
+          "Standard Linux containers share the host kernel via cgroups and namespaces, creating privilege escalation risks across hostile tenants.",
+          "gVisor intercepts application syscalls in userspace through Sentry and Gofer modules, preventing direct kernel exploitation.",
+          "Kata Containers runs each pod inside a dedicated lightweight hardware-virtualized MicroVM (QEMU/Cloud-Hypervisor) for true VM-grade isolation."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Focuses on security boundaries between co-located untrusted tenants in cloud clusters.",
+          "completeness": "Contrasts syscall emulation (gVisor) vs microVMs (Kata) vs software namespaces and network policies.",
+          "source_quality": "gVisor, Kata Containers, and CNCF security whitepapers."
+        }
+      }
+    },
+    {
+      "id": "Q36",
+      "domain": "CS",
+      "difficulty": "Easy",
+      "task_type": "Explanation",
+      "topic": "OAuth 2.0 Authorization Code flow with PKCE",
+      "metadata": {
+        "domain_full_name": "Cybersecurity & Privacy",
+        "target_aspects": ["Code Verifier", "Code Challenge", "Public Clients", "Authorization Code Interception"],
+        "expected_source_domains": ["ietf.org", "auth0.com", "oauth.net"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on RFC 7636 (PKCE).",
+        "provisional_reference_claims": [
+          "Proof Key for Code Exchange (PKCE) protects public clients (SPAs, mobile apps) that cannot securely store a client secret.",
+          "The client generates a secret cryptographic code_verifier and sends a transformed code_challenge to the authorization server.",
+          "Upon exchanging the authorization code, the client supplies the original code_verifier; token issuance is denied if the verification hash fails."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Detailed step-by-step cryptographic protocol exchange between client, auth server, and resource server.",
+          "completeness": "Clearly articulates the authorization code interception attack vector and PKCE's defense.",
+          "source_quality": "IETF RFC 7636 and authoritative identity provider engineering guides."
+        }
+      }
+    },
+    {
+      "id": "Q37",
+      "domain": "DE",
+      "difficulty": "Intermediate",
+      "task_type": "SOTA",
+      "topic": "Graph RAG architectures combining knowledge graphs with vector databases",
+      "metadata": {
+        "domain_full_name": "Data Engineering & Databases",
+        "target_aspects": ["Entity Extraction", "Community Summaries", "Multi-Hop Reasoning", "Graph Traversal"],
+        "expected_source_domains": ["microsoft.com", "neo4j.com", "arxiv.org"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims derived from Edge et al. (Microsoft Research GraphRAG, 2024).",
+        "provisional_reference_claims": [
+          "Standard vector RAG struggles with global holistic dataset queries and multi-hop entity relationships.",
+          "GraphRAG constructs knowledge graphs from text collections by extracting entities, claims, and relationships using an LLM.",
+          "Hierarchical community clustering (e.g. Leiden algorithm) generates pre-computed summaries across graph modules, facilitating macro-level reasoning."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Combines graph knowledge representation with dense vector retrieval.",
+          "completeness": "Explains graph extraction pipeline, community detection, and multi-hop question answering advantages.",
+          "source_quality": "Microsoft Research GraphRAG documentation and academic graph papers."
+        }
+      }
+    },
+    {
+      "id": "Q38",
+      "domain": "ET",
+      "difficulty": "Difficult",
+      "task_type": "SOTA",
+      "topic": "High-NA EUV lithography deployment and semiconductor packaging",
+      "metadata": {
+        "domain_full_name": "Emerging & Quantum Technologies",
+        "target_aspects": ["0.55 Numerical Aperture", "Anamorphic Optics", "3D Chiplet Stacking", "Sub-2nm Nodes"],
+        "expected_source_domains": ["asml.com", "tsmc.com", "anandtech.com"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on ASML High-NA roadmap and foundry packaging publications.",
+        "provisional_reference_claims": [
+          "High-NA EUV lithography increases numerical aperture from 0.33 to 0.55, enabling printing of 8nm critical features required for sub-2nm nodes.",
+          "High-NA uses anamorphic optics with different magnifications in X and Y axes (4x and 8x), halving the reticle field size.",
+          "Advanced 3D packaging technologies (e.g. TSMC CoWoS, Intel Foveros) complement lithography scaling by interconnecting heterogeneous chiplets at sub-micron pitch."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Covers both extreme ultraviolet optical physics and modern advanced packaging strategies.",
+          "completeness": "Explains reticle stitching, anamorphic magnification, pellicle thermal resistance, and chiplet scaling.",
+          "source_quality": "ASML investor technical presentations and semiconductor engineering portals."
+        }
+      }
+    },
+    {
+      "id": "Q39",
+      "domain": "SE",
+      "difficulty": "Easy",
+      "task_type": "Explanation",
+      "topic": "Distributed tracing with OpenTelemetry: traces, spans, and context propagation",
+      "metadata": {
+        "domain_full_name": "Software Architecture & DevOps",
+        "target_aspects": ["W3C TraceContext", "Collector Architecture", "Span Context", "Sampling Strategies"],
+        "expected_source_domains": ["opentelemetry.io", "cncf.io", "w3.org"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims based on CNCF OpenTelemetry standards.",
+        "provisional_reference_claims": [
+          "Distributed tracing records the end-to-end path of a transaction through a multi-service architecture.",
+          "A Trace represents the directed acyclic graph (DAG) of Spans, where each Span represents a timed unit of contiguous execution.",
+          "Context propagation injects metadata (TraceId, SpanId) into network transport headers adhering to W3C TraceContext standards."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Focuses on tracing models, context transmission, and collector processing pipelines.",
+          "completeness": "Covers head vs tail sampling, baggage items, span attributes, and backend storage.",
+          "source_quality": "OpenTelemetry and CNCF official documentation."
+        }
+      }
+    },
+    {
+      "id": "Q40",
+      "domain": "SE",
+      "difficulty": "Intermediate",
+      "task_type": "Comparison",
+      "topic": "Platform Engineering: Backstage vs Port for developer self-service portals",
+      "metadata": {
+        "domain_full_name": "Software Architecture & DevOps",
+        "target_aspects": ["Software Catalog", "Internal Developer Portal", "Self-Service Actions", "Plugin Ecosystem"],
+        "expected_source_domains": ["backstage.io", "getport.io", "cncf.io"]
+      },
+      "ground_truth": {
+        "verification_status": "requires_manual_reference_verification",
+        "is_verified": false,
+        "verified_by": null,
+        "verification_notes": "Provisional claims comparing Spotify Backstage (open source) with Port (SaaS IDP).",
+        "provisional_reference_claims": [
+          "Backstage (Spotify/CNCF) is an open-source, code-first developer portal framework requiring TypeScript/React maintenance and self-hosting.",
+          "Port is a SaaS-native, configuration-driven internal developer portal offering flexible data models, webhooks, and pre-built integrations without coding custom plugins.",
+          "Both platforms centralize software catalogs, scorecards, and self-service automation to reduce developer cognitive load."
+        ]
+      },
+      "evaluation_rubric": {
+        "structural_requirements": ["Introduction", "Key Points", "Applications", "Challenges", "Conclusion", "References"],
+        "minimum_word_count": 250,
+        "scoring_criteria": {
+          "relevance": "Contrasts developer self-service frameworks and internal software catalog implementations.",
+          "completeness": "Compares hosting overhead, customization flexibility, scorecards, RBAC, and total cost of ownership.",
+          "source_quality": "CNCF platform engineering whitepapers and product documentation."
+        }
+      }
+    }
+  ]
+}
+

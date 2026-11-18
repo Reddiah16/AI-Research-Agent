@@ -1,0 +1,44 @@
+{
+  "baseline_mode": "mocked",
+  "candidate_mode": "mocked",
+  "baseline_generated_at": "2026-11-18T08:44:26+00:00",
+  "candidate_generated_at": "2026-11-18T08:52:29+00:00",
+  "comparisons": {
+    "summary.end_to_end.p50": {
+      "baseline": 0.091411,
+      "candidate": 0.040708,
+      "delta": -0.050703,
+      "percent_change": -55.467,
+      "status": "measured"
+    },
+    "summary.end_to_end.p95": {
+      "baseline": 0.156216,
+      "candidate": 0.042184,
+      "delta": -0.114032,
+      "percent_change": -72.996,
+      "status": "measured"
+    },
+    "summary.success_rate": {
+      "baseline": 1.0,
+      "candidate": 1.0,
+      "delta": 0.0,
+      "percent_change": 0.0,
+      "status": "measured"
+    },
+    "summary.stages.editor.p50": {
+      "baseline": 0.001,
+      "candidate": 0.0,
+      "delta": -0.001,
+      "percent_change": -100.0,
+      "status": "measured"
+    },
+    "summary.stages.research.p50": {
+      "baseline": 0.0,
+      "candidate": 0.0,
+      "delta": 0.0,
+      "percent_change": null,
+      "status": "measured"
+    }
+  },
+  "causality_note": "Observed differences only. Do not claim a causal improvement unless the runs were a controlled A/B with identical inputs and environment."
+}

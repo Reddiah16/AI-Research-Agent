@@ -1,0 +1,1920 @@
+{
+  "generated_at": "2026-11-18T09:16:54+00:00",
+  "mode": "live",
+  "dataset": {
+    "filename": "golden_eval_v1.jsonl",
+    "sha256": "edacf9ec8225061ce4d47403301e73c4c06aad1fafb142c67243019cc8b8637e",
+    "version": "1.0.0",
+    "validation": {
+      "ok": true,
+      "errors": [],
+      "warnings": [
+        "G045: retrieval labels include non-verified sources",
+        "G046: retrieval labels include non-verified sources"
+      ],
+      "counts": {
+        "cases": 118,
+        "categories": {
+          "comparison": 21,
+          "conflicting_sources": 10,
+          "factual_research": 18,
+          "insufficient_evidence": 10,
+          "misleading_assumption": 10,
+          "multi_source_research": 19,
+          "recent_information": 10,
+          "technical_research": 20
+        },
+        "difficulties": {
+          "Difficult": 24,
+          "Easy": 40,
+          "Intermediate": 54
+        },
+        "provenance": {
+          "synthetic": 40,
+          "verified_reference": 78
+        },
+        "retrieval_labels": {
+          "available": 78,
+          "unavailable": 40
+        }
+      }
+    }
+  },
+  "environment": {
+    "python": "3.13.13",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "cpu_count": 8,
+    "llm_model": "qwen3:4b",
+    "ollama_host": "http://localhost:11434",
+    "search_provider": "duckduckgo",
+    "max_results": 3,
+    "enable_page_fetch": true,
+    "max_total_pages_per_run": 12
+  },
+  "cases_requested": 3,
+  "cases_completed": 3,
+  "errors": 0,
+  "retrieval": {
+    "cases_total": 3,
+    "measured_cases": 3,
+    "excluded_cases": 0,
+    "excluded_case_ids": [],
+    "metrics": {
+      "recall@1": {
+        "mean": 0.0,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "precision@1": {
+        "mean": 0.0,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "ndcg@1": {
+        "mean": 0.0,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "recall@3": {
+        "mean": 0.1667,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "precision@3": {
+        "mean": 0.1111,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "ndcg@3": {
+        "mean": 0.129,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "recall@5": {
+        "mean": 0.1667,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "precision@5": {
+        "mean": 0.0667,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "ndcg@5": {
+        "mean": 0.129,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "recall@10": {
+        "mean": 0.1667,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "precision@10": {
+        "mean": 0.0333,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "ndcg@10": {
+        "mean": 0.129,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "mrr": {
+        "mean": 0.1667,
+        "measured_cases": 3,
+        "status": "measured"
+      }
+    },
+    "methodology": "Means are computed over cases with ground-truth labels only. Cases without labels are excluded, not scored as zero."
+  },
+  "answer_quality": {
+    "overall_mean": 0.7402,
+    "components": {
+      "faithfulness": {
+        "mean": 0.6667,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "answer_relevance": {
+        "mean": 0.6634,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "contextual_precision": {
+        "mean": 1.0,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "contextual_recall": {
+        "mean": 0.7778,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "citation_support": {
+        "mean": 0.6667,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "unsupported_claims": {
+        "mean": 0.0,
+        "measured_cases": 3,
+        "status": "measured"
+      },
+      "evidence_coverage": {
+        "mean": 0.8175,
+        "measured_cases": 3,
+        "status": "measured"
+      }
+    },
+    "weights": {
+      "faithfulness": 0.3,
+      "answer_relevance": 0.2,
+      "contextual_precision": 0.15,
+      "contextual_recall": 0.15,
+      "citation_support": 0.15,
+      "evidence_coverage": 0.05
+    },
+    "measured_cases": 3
+  },
+  "expected_behavior": {
+    "synthetic_cases": 0,
+    "measured": 0,
+    "passed": 0,
+    "pass_rate": null,
+    "results": []
+  },
+  "latency": {
+    "samples": 3,
+    "mean": 465.050341,
+    "median": 484.363322,
+    "p50": 484.363322,
+    "p95": 497.538505,
+    "min": 411.785288,
+    "max": 499.002415,
+    "stdev": 46.705997,
+    "status": "measured"
+  },
+  "token_usage": {
+    "calls": 6,
+    "calls_with_usage": 1,
+    "prompt_tokens": 2659,
+    "completion_tokens": 1200,
+    "total_tokens": 3859,
+    "model": "qwen3:4b"
+  },
+  "cases": [
+    {
+      "case_id": "G001",
+      "question": "What are the key verified facts about Retrieval Augmented Generation architecture and core components?",
+      "category": "factual_research",
+      "difficulty": "Easy",
+      "provenance": "verified_reference",
+      "status": "complete",
+      "error": null,
+      "elapsed_seconds": 499.002,
+      "pipeline_latency_seconds": 498.987,
+      "planner_latency_seconds": 22.996,
+      "research_latency_seconds": 15.939,
+      "editor_latency_seconds": 460.034,
+      "source_count": 7,
+      "retrieved_urls": [
+        "https://en.wikipedia.org/wiki/Retrieval-augmented_generation",
+        "https://www.ibm.com/think/topics/retrieval-augmented-generation",
+        "https://learn.deeplearning.ai/courses/retrieval-augmented-generation/lesson/rrngb/a-conversation-with-andrew-ng",
+        "https://blog.kalvad.com/rag-deep-dive-series-core-components/",
+        "https://www.lucentinnovation.com/resources/it-insights/the-core-components-of-rag",
+        "https://customgpt.ai/components-of-a-rag-system/",
+        "https://www.linkedin.com/pulse/advancing-retrieval-augmented-generation-rag-future-ai-ramachandran-ffsve"
+      ],
+      "relevant_urls": [
+        "https://arxiv.org/abs/2005.11401",
+        "https://docs.langchain.com/oss/python/langchain/rag",
+        "https://github.com/facebookresearch/faiss/wiki",
+        "https://arxiv.org/abs/1603.09320"
+      ],
+      "generation_mode": "json",
+      "token_usage_delta": {
+        "calls": 2,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "available": false
+      },
+      "retrieval": {
+        "case_id": "G001",
+        "label_status": "available",
+        "ranked_count": 7,
+        "relevant_count": 4,
+        "matched_count": 0,
+        "matched_urls": [],
+        "first_relevant_rank": null,
+        "k_values": [
+          1,
+          3,
+          5,
+          10
+        ],
+        "metrics": {
+          "recall@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "recall@3": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@3": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@3": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "recall@5": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@5": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@5": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "recall@10": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@10": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@10": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "mrr": {
+            "value": 0.0,
+            "status": "measured"
+          }
+        }
+      },
+      "answer_quality": {
+        "evaluator_version": "answer-quality-1.0",
+        "question": "What are the key verified facts about Retrieval Augmented Generation architecture and core components?",
+        "report": {
+          "word_count": 224,
+          "source_count": 4,
+          "finding_count": 3
+        },
+        "components": {
+          "faithfulness": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Strict faithfulness: share of verifiable report claims whose cited source excerpts cover the claim at the threshold. Partial support is reported but not counted as full support. Lexical proxy, not entailment.",
+            "details": {
+              "claims_total": 3,
+              "claims_supported": 2,
+              "claims_partially_supported": 1,
+              "claims_unsupported": 0,
+              "claims_unverifiable": 0,
+              "verifiable_claims": 3,
+              "support_threshold": 0.55,
+              "partial_threshold": 0.3,
+              "minimum_evidence_tokens": 5,
+              "claim_results": [
+                {
+                  "claim": "RAG combines a parametric language model with non-parametric external memory accessed through retrieval during inference",
+                  "source_ids": [
+                    "SRC-001"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.8462,
+                  "classification": "supported",
+                  "reason": ""
+                },
+                {
+                  "claim": "Core components include Knowledge Base, Embedding Model, Vector Database, Retriever, and Generator (LLM)",
+                  "source_ids": [
+                    "SRC-004"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-004"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.9167,
+                  "classification": "supported",
+                  "reason": ""
+                },
+                {
+                  "claim": "RAG was introduced in a 2020 paper to enhance factual accuracy and contextual grounding of AI responses",
+                  "source_ids": [
+                    "SRC-001"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.4167,
+                  "classification": "partially_supported",
+                  "reason": ""
+                }
+              ],
+              "unresolved_claims": [
+                {
+                  "claim": "RAG was introduced in a 2020 paper to enhance factual accuracy and contextual grounding of AI responses",
+                  "source_ids": [
+                    "SRC-001"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.4167,
+                  "classification": "partially_supported",
+                  "reason": ""
+                }
+              ],
+              "partial_credit_score": 0.8333,
+              "strict_faithfulness": 0.6667
+            }
+          },
+          "answer_relevance": {
+            "score": 0.62,
+            "status": "measured",
+            "method": "Lexical coverage: 0.7 mean(target-aspect token coverage) + 0.3 question-token coverage. Not semantic or factual.",
+            "details": {
+              "aspect_coverage": {
+                "Chunking": 1.0,
+                "Vector Indexing": 0.5,
+                "Dense Retrieval": 0.5,
+                "Prompt Augmentation": 0.0
+              },
+              "topic_coverage": 0.9
+            }
+          },
+          "contextual_precision": {
+            "score": 1.0,
+            "status": "measured",
+            "method": "Mean per-claim share of cited sources whose title/excerpt lexically covers the claim at the relevance threshold. Citation relevance only; not factual correctness.",
+            "details": {
+              "claims_evaluated": 3,
+              "relevance_threshold": 0.3,
+              "claim_results": [
+                {
+                  "claim": "RAG combines a parametric language model with non-parametric external memory accessed through retrieval during inference",
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 1,
+                  "cited_sources": 1,
+                  "precision": 1.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-001",
+                      "coverage": 0.8462,
+                      "relevant": true
+                    }
+                  ]
+                },
+                {
+                  "claim": "Core components include Knowledge Base, Embedding Model, Vector Database, Retriever, and Generator (LLM)",
+                  "valid_source_ids": [
+                    "SRC-004"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 1,
+                  "cited_sources": 1,
+                  "precision": 1.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-004",
+                      "coverage": 0.9167,
+                      "relevant": true
+                    }
+                  ]
+                },
+                {
+                  "claim": "RAG was introduced in a 2020 paper to enhance factual accuracy and contextual grounding of AI responses",
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 1,
+                  "cited_sources": 1,
+                  "precision": 1.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-001",
+                      "coverage": 0.4167,
+                      "relevant": true
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "contextual_recall": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Share of expected reference findings whose content tokens are covered by the report at the threshold. Lexical proxy, not entailment.",
+            "details": {
+              "reference_findings": 3,
+              "supported_findings": 2,
+              "threshold": 0.55,
+              "findings": [
+                {
+                  "reference_finding": "RAG combines pre-trained parametric memory (LLM) with external non-parametric retrieval.",
+                  "coverage": 0.7778,
+                  "supported": true
+                },
+                {
+                  "reference_finding": "Core pipeline phases include document loading, chunking, vector embedding, similarity retrieval, and generation prompt synthesis.",
+                  "coverage": 0.5714,
+                  "supported": true
+                },
+                {
+                  "reference_finding": "Vector databases or indices (e.g. FAISS, HNSW) provide dense vector retrieval based on distance metrics like cosine similarity.",
+                  "coverage": 0.2667,
+                  "supported": false
+                }
+              ]
+            }
+          },
+          "citation_support": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Share of cited findings whose cited source excerpt covers the claim at the threshold. Format validity (valid source ID) is reported separately. Content support is lexical overlap, not entailment.",
+            "details": {
+              "findings": 3,
+              "cited_findings": 3,
+              "format_valid_citations": 3,
+              "content_supported_citations": 2,
+              "citation_format_validity": 1.0,
+              "threshold": 0.55,
+              "results": [
+                {
+                  "claim": "RAG combines a parametric language model with non-parametric external memory accessed through retrieval during inference",
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.8462,
+                  "content_supported": true
+                },
+                {
+                  "claim": "Core components include Knowledge Base, Embedding Model, Vector Database, Retriever, and Generator (LLM)",
+                  "valid_source_ids": [
+                    "SRC-004"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.9167,
+                  "content_supported": true
+                },
+                {
+                  "claim": "RAG was introduced in a 2020 paper to enhance factual accuracy and contextual grounding of AI responses",
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.4167,
+                  "content_supported": false
+                }
+              ]
+            }
+          },
+          "unsupported_claims": {
+            "score": 0.0,
+            "status": "measured",
+            "method": "Share of checkable findings with no valid content-supported citation. Lower is better. Diagnostic only; not part of the overall weighting.",
+            "details": {
+              "claims": 3,
+              "unsupported": 0,
+              "partially_supported": 1,
+              "unsupported_claims": [],
+              "partially_supported_claims": [
+                {
+                  "claim": "RAG was introduced in a 2020 paper to enhance factual accuracy and contextual grounding of AI responses",
+                  "valid_source_ids": [
+                    "SRC-001"
+                  ],
+                  "invalid_source_ids": [],
+                  "best_coverage": 0.4167
+                }
+              ],
+              "partial_threshold": 0.3,
+              "support_threshold": 0.55,
+              "direction": "lower_is_better"
+            }
+          },
+          "evidence_coverage": {
+            "score": 0.7302,
+            "status": "measured",
+            "method": "Mean of available retrieval-usability and citation-grounding ratios. Retrieval/alignment only; not source authority or factual correctness.",
+            "details": {
+              "retrieval_usability": {
+                "usable_evidence": 8,
+                "search_results": 9,
+                "ratio": 0.8889
+              },
+              "citation_grounding": {
+                "grounded_sources": 4,
+                "retrieved_sources": 7,
+                "ratio": 0.5714
+              }
+            }
+          }
+        },
+        "overall_score": 0.7105,
+        "weights_used": {
+          "faithfulness": 0.3,
+          "answer_relevance": 0.2,
+          "contextual_precision": 0.15,
+          "contextual_recall": 0.15,
+          "citation_support": 0.15,
+          "evidence_coverage": 0.05
+        },
+        "measured_components": [
+          "faithfulness",
+          "answer_relevance",
+          "contextual_precision",
+          "contextual_recall",
+          "citation_support",
+          "unsupported_claims",
+          "evidence_coverage"
+        ],
+        "unmeasured_components": [],
+        "limitations": [
+          "All components are deterministic lexical/structural proxies.",
+          "Citation support is not factual verification or entailment.",
+          "Unmeasured components are excluded from the weighting, never imputed as zero.",
+          "Contextual recall requires reference findings; it is not measurable for open-topic runs."
+        ]
+      },
+      "expected_behavior": null,
+      "engine_record": {
+        "record_version": "phase3-evaluation-1.0",
+        "evaluated_at": "2026-11-18T09:01:58+00:00",
+        "mode": "benchmark",
+        "dataset": {
+          "filename": "golden_eval_v1.jsonl",
+          "version": null,
+          "sha256": "edacf9ec8225061ce4d47403301e73c4c06aad1fafb142c67243019cc8b8637e"
+        },
+        "question": {
+          "id": "G001",
+          "domain": "AI",
+          "topic": "What are the key verified facts about Retrieval Augmented Generation architecture and core components?"
+        },
+        "report": {
+          "title": "Verified Facts on Retrieval-Augmented Generation Architecture and Core Components",
+          "word_count": 224,
+          "structured": true,
+          "generation_mode": "json"
+        },
+        "metrics": {
+          "relevance": {
+            "score": 0.62,
+            "status": "measured",
+            "method": "Lexical coverage: 0.7 mean(target-aspect token coverage) + 0.3 topic token coverage. Not a semantic or factual score.",
+            "details": {
+              "aspect_coverage": {
+                "Chunking": 1.0,
+                "Vector Indexing": 0.5,
+                "Dense Retrieval": 0.5,
+                "Prompt Augmentation": 0.0
+              },
+              "topic_coverage": 0.9
+            }
+          },
+          "evidence_coverage": {
+            "score": 0.7302,
+            "status": "measured",
+            "method": "Mean of available retrieval-usability and citation-grounding ratios. Retrieval/alignment only; not source authority or factual correctness.",
+            "details": {
+              "retrieval_usability": {
+                "usable_evidence": 8,
+                "search_results": 9,
+                "ratio": 0.8889
+              },
+              "citation_grounding": {
+                "grounded_sources": 4,
+                "retrieved_sources": 7,
+                "ratio": 0.5714
+              }
+            }
+          },
+          "citation_quality": {
+            "score": 1.0,
+            "status": "measured",
+            "method": "0.6 × citation precision + 0.4 × claim-citation coverage. Alignment only; neither component proves a claim is true.",
+            "details": {
+              "supported_citations": 4,
+              "unsupported_citations": 0,
+              "citation_precision": 1.0,
+              "claim_citation_coverage": 1.0
+            }
+          },
+          "completeness": {
+            "score": 0.974,
+            "status": "measured",
+            "method": "Structural compliance: 0.75 × required-heading coverage + 0.25 × min(word_count / rubric minimum, 1).",
+            "details": {
+              "sections_present": {
+                "Introduction": true,
+                "Key Points": true,
+                "Applications": true,
+                "Challenges": true,
+                "Conclusion": true,
+                "References": true
+              },
+              "section_ratio": 1.0,
+              "word_count": 224,
+              "minimum_word_count": 250,
+              "word_ratio": 0.896
+            }
+          },
+          "factual_support": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Lexical claim-support proxy: share of verified benchmark claims whose content-token coverage is at least the threshold. Not entailment or factual verification. Unresolved claims are excluded, not promoted.",
+            "details": {
+              "verified_claims": 3,
+              "supported_verified_claims": 2,
+              "support_threshold": 0.55,
+              "claim_results": [
+                {
+                  "claim_id": "Q01-C1",
+                  "status": "verified",
+                  "lexical_coverage": 0.7778,
+                  "supported_proxy": true
+                },
+                {
+                  "claim_id": "Q01-C2",
+                  "status": "verified",
+                  "lexical_coverage": 0.5714,
+                  "supported_proxy": true
+                },
+                {
+                  "claim_id": "Q01-C3",
+                  "status": "verified",
+                  "lexical_coverage": 0.2667,
+                  "supported_proxy": false
+                }
+              ],
+              "unresolved_claims": []
+            }
+          }
+        },
+        "overall_score": 0.7828,
+        "component_weights_used": {
+          "relevance": 0.2,
+          "evidence_coverage": 0.2,
+          "citation_quality": 0.2,
+          "completeness": 0.15,
+          "factual_support": 0.25
+        },
+        "measured_components": [
+          "relevance",
+          "evidence_coverage",
+          "citation_quality",
+          "completeness",
+          "factual_support"
+        ],
+        "unmeasured_components": [],
+        "claim_results": [
+          {
+            "claim_id": "Q01-C1",
+            "status": "verified",
+            "lexical_coverage": 0.7778,
+            "supported_proxy": true
+          },
+          {
+            "claim_id": "Q01-C2",
+            "status": "verified",
+            "lexical_coverage": 0.5714,
+            "supported_proxy": true
+          },
+          {
+            "claim_id": "Q01-C3",
+            "status": "verified",
+            "lexical_coverage": 0.2667,
+            "supported_proxy": false
+          }
+        ],
+        "unresolved_claims": [],
+        "methodology_notes": [
+          "Scores are lexical/structural measurements with explicit definitions; they are not semantic understanding or factual verification.",
+          "Citation quality measures whether emitted URLs were actually retrieved. A retrieved URL can still be cited for a claim it does not support.",
+          "Factual support is a lexical proxy: in benchmark mode, coverage of verified reference claims; in open-topic mode, coverage of report claims by the excerpts of the sources they cite. It is not entailment, source accuracy, or truth.",
+          "Open-topic claims without usable source evidence are unverifiable and are excluded from the factual-support denominator, never scored as false.",
+          "Claims marked partially_supported or needs_more_evidence are excluded from the factual-support denominator and reported as unresolved. They are never promoted.",
+          "Unmeasured components remain null and are removed from the overall weighting rather than being imputed as zero."
+        ]
+      }
+    },
+    {
+      "case_id": "G005",
+      "question": "Compare the main approaches or options in Speculative Decoding vs Medusa for LLM inference acceleration. What are the key differences and trade-offs?",
+      "category": "comparison",
+      "difficulty": "Intermediate",
+      "provenance": "verified_reference",
+      "status": "complete",
+      "error": null,
+      "elapsed_seconds": 484.363,
+      "pipeline_latency_seconds": 484.347,
+      "planner_latency_seconds": 20.286,
+      "research_latency_seconds": 13.69,
+      "editor_latency_seconds": 450.364,
+      "source_count": 9,
+      "retrieved_urls": [
+        "https://www.bing.com/aclick?ld=e8KwcjKqO-J_DQPrjjcIX8TDVUCUwsLjC8VgJ-BQw7Bg2yT0gJUbLs2aBcuU8nOy284lszw-pLGhRPeYSJdTlOImc03hI3XCXR_pDNV6vi7ZY_i3_sU1VaA1eRfhniolplzzYI6sXRnRmpXLmBYuF98xZ09VkUrelmHFEyHjiDgk5ZJ7UK2d2huSK4UZNfhdIknfPB8whhwjsmCgtQbCuGn7oTVhs&u=aHR0cHMlM2ElMmYlMmZ0cnkuZGlnaXRhbG9jZWFuLmNvbSUyZmluZmVyZW5jZS1yb3V0ZXIlMmYlM2Z1dG1fYWRncm91cCUzZCUyNnV0bV9jcmVhdGl2ZSUzZCUyNnV0bV9sb2NhdGlvbiUzZDExNjA3MiUyNnV0bV9tYXRjaHR5cGUlM2RwJTI2dXRtX2RldmljZSUzZGMlMjZtc2Nsa2lkJTNkMmZmZjU1ODE5YTRkMTc4YThkNDUzZjdjZjNkMGJkNzUlMjZ1dG1fc291cmNlJTNkYmluZyUyNnV0bV9tZWRpdW0lM2RjcGMlMjZ1dG1fY2FtcGFpZ24lM2RzZWFyY2hfbmJfaW5mZXJlbmNlZW5naW5lX2luZmVyZW5jZXJvdXRlcl91c2FfZW4lMjZ1dG1fdGVybSUzZGZhc3QlMjUyMGxsbSUyNTIwaW5mZXJlbmNlJTI2dXRtX2NvbnRlbnQlM2RnZW5lcmlj&rlid=2fff55819a4d178a8d453f7cf3d0bd75",
+        "https://arxiv.org/abs/2401.10774",
+        "https://arxiv.org/html/2401.10774",
+        "https://arxiv.org/pdf/2401.10774",
+        "https://vast.ai/article/serving-medusa-on-vast",
+        "https://blog.prompt20.com/posts/speculative-decoding/",
+        "https://syntaxradar.com/radar/speculative-decoding-medusa-eagle-multi-token-prediction-benchmarks",
+        "https://inferensys.com/differences/semantic-cache-and-inference-optimization-platforms/speculative-decoding-frameworks/specinfer-vs-medusa",
+        "https://iotdigitaltwinplm.com/speculative-decoding-eagle-3-vs-medusa-vs-lookahead-llm-inference-speedup-2026/"
+      ],
+      "relevant_urls": [
+        "https://arxiv.org/abs/2211.17192",
+        "https://arxiv.org/abs/2401.10774"
+      ],
+      "generation_mode": "json_repaired",
+      "token_usage_delta": {
+        "calls": 2,
+        "prompt_tokens": 2659,
+        "completion_tokens": 1200,
+        "total_tokens": 3859,
+        "available": true
+      },
+      "retrieval": {
+        "case_id": "G005",
+        "label_status": "available",
+        "ranked_count": 9,
+        "relevant_count": 2,
+        "matched_count": 1,
+        "matched_urls": [
+          "https://arxiv.org/abs/2401.10774"
+        ],
+        "first_relevant_rank": 2,
+        "k_values": [
+          1,
+          3,
+          5,
+          10
+        ],
+        "metrics": {
+          "recall@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "recall@3": {
+            "value": 0.5,
+            "status": "measured"
+          },
+          "precision@3": {
+            "value": 0.3333,
+            "status": "measured"
+          },
+          "ndcg@3": {
+            "value": 0.3869,
+            "status": "measured"
+          },
+          "recall@5": {
+            "value": 0.5,
+            "status": "measured"
+          },
+          "precision@5": {
+            "value": 0.2,
+            "status": "measured"
+          },
+          "ndcg@5": {
+            "value": 0.3869,
+            "status": "measured"
+          },
+          "recall@10": {
+            "value": 0.5,
+            "status": "measured"
+          },
+          "precision@10": {
+            "value": 0.1,
+            "status": "measured"
+          },
+          "ndcg@10": {
+            "value": 0.3869,
+            "status": "measured"
+          },
+          "mrr": {
+            "value": 0.5,
+            "status": "measured"
+          }
+        }
+      },
+      "answer_quality": {
+        "evaluator_version": "answer-quality-1.0",
+        "question": "Compare the main approaches or options in Speculative Decoding vs Medusa for LLM inference acceleration. What are the key differences and trade-offs?",
+        "report": {
+          "word_count": 294,
+          "source_count": 0,
+          "finding_count": 3
+        },
+        "components": {
+          "faithfulness": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Strict faithfulness: share of verifiable report claims whose cited source excerpts cover the claim at the threshold. Partial support is reported but not counted as full support. Lexical proxy, not entailment.",
+            "details": {
+              "claims_total": 3,
+              "claims_supported": 2,
+              "claims_partially_supported": 1,
+              "claims_unsupported": 0,
+              "claims_unverifiable": 0,
+              "verifiable_claims": 3,
+              "support_threshold": 0.55,
+              "partial_threshold": 0.3,
+              "minimum_evidence_tokens": 5,
+              "claim_results": [
+                {
+                  "claim": "Medusa enhances LLM inference speed by 2.3-2.8 times through parallel token prediction using additional decoding heads",
+                  "source_ids": [
+                    "SRC-003"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-003"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.7857,
+                  "classification": "supported",
+                  "reason": ""
+                },
+                {
+                  "claim": "Speculative decoding uses a smaller auxiliary model to predict tokens ahead of time for verification by the main model",
+                  "source_ids": [
+                    "SRC-004"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-004"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.5,
+                  "classification": "partially_supported",
+                  "reason": ""
+                },
+                {
+                  "claim": "Medusa requires fine-tuning an adapter on top of the original model for optimal performance",
+                  "source_ids": [
+                    "SRC-005"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-005"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.7778,
+                  "classification": "supported",
+                  "reason": ""
+                }
+              ],
+              "unresolved_claims": [
+                {
+                  "claim": "Speculative decoding uses a smaller auxiliary model to predict tokens ahead of time for verification by the main model",
+                  "source_ids": [
+                    "SRC-004"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-004"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.5,
+                  "classification": "partially_supported",
+                  "reason": ""
+                }
+              ],
+              "partial_credit_score": 0.8333,
+              "strict_faithfulness": 0.6667
+            }
+          },
+          "answer_relevance": {
+            "score": 0.5577,
+            "status": "measured",
+            "method": "Lexical coverage: 0.7 mean(target-aspect token coverage) + 0.3 question-token coverage. Not semantic or factual.",
+            "details": {
+              "aspect_coverage": {
+                "Draft Models": 1.0,
+                "Multi-Head Prediction": 0.5,
+                "Tree Verification": 0.0,
+                "Latency Trade-offs": 0.5
+              },
+              "topic_coverage": 0.6923
+            }
+          },
+          "contextual_precision": {
+            "score": 1.0,
+            "status": "measured",
+            "method": "Mean per-claim share of cited sources whose title/excerpt lexically covers the claim at the relevance threshold. Citation relevance only; not factual correctness.",
+            "details": {
+              "claims_evaluated": 3,
+              "relevance_threshold": 0.3,
+              "claim_results": [
+                {
+                  "claim": "Medusa enhances LLM inference speed by 2.3-2.8 times through parallel token prediction using additional decoding heads",
+                  "valid_source_ids": [
+                    "SRC-003"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 1,
+                  "cited_sources": 1,
+                  "precision": 1.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-003",
+                      "coverage": 0.7857,
+                      "relevant": true
+                    }
+                  ]
+                },
+                {
+                  "claim": "Speculative decoding uses a smaller auxiliary model to predict tokens ahead of time for verification by the main model",
+                  "valid_source_ids": [
+                    "SRC-004"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 1,
+                  "cited_sources": 1,
+                  "precision": 1.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-004",
+                      "coverage": 0.5,
+                      "relevant": true
+                    }
+                  ]
+                },
+                {
+                  "claim": "Medusa requires fine-tuning an adapter on top of the original model for optimal performance",
+                  "valid_source_ids": [
+                    "SRC-005"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 1,
+                  "cited_sources": 1,
+                  "precision": 1.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-005",
+                      "coverage": 0.7778,
+                      "relevant": true
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "contextual_recall": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Share of expected reference findings whose content tokens are covered by the report at the threshold. Lexical proxy, not entailment.",
+            "details": {
+              "reference_findings": 3,
+              "supported_findings": 2,
+              "threshold": 0.55,
+              "findings": [
+                {
+                  "reference_finding": "Speculative decoding employs an auxiliary smaller draft model to generate candidate tokens which the target model verifies in parallel.",
+                  "coverage": 0.6154,
+                  "supported": true
+                },
+                {
+                  "reference_finding": "Medusa avoids a separate draft model by adding multiple decoding heads atop the target model to generate candidates simultaneously.",
+                  "coverage": 0.5714,
+                  "supported": true
+                },
+                {
+                  "reference_finding": "Speculative decoding requires managing two distinct models in memory, whereas Medusa adds parameters to a single model architecture.",
+                  "coverage": 0.5,
+                  "supported": false
+                }
+              ]
+            }
+          },
+          "citation_support": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Share of cited findings whose cited source excerpt covers the claim at the threshold. Format validity (valid source ID) is reported separately. Content support is lexical overlap, not entailment.",
+            "details": {
+              "findings": 3,
+              "cited_findings": 3,
+              "format_valid_citations": 3,
+              "content_supported_citations": 2,
+              "citation_format_validity": 1.0,
+              "threshold": 0.55,
+              "results": [
+                {
+                  "claim": "Medusa enhances LLM inference speed by 2.3-2.8 times through parallel token prediction using additional decoding heads",
+                  "valid_source_ids": [
+                    "SRC-003"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.7857,
+                  "content_supported": true
+                },
+                {
+                  "claim": "Speculative decoding uses a smaller auxiliary model to predict tokens ahead of time for verification by the main model",
+                  "valid_source_ids": [
+                    "SRC-004"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.5,
+                  "content_supported": false
+                },
+                {
+                  "claim": "Medusa requires fine-tuning an adapter on top of the original model for optimal performance",
+                  "valid_source_ids": [
+                    "SRC-005"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.7778,
+                  "content_supported": true
+                }
+              ]
+            }
+          },
+          "unsupported_claims": {
+            "score": 0.0,
+            "status": "measured",
+            "method": "Share of checkable findings with no valid content-supported citation. Lower is better. Diagnostic only; not part of the overall weighting.",
+            "details": {
+              "claims": 3,
+              "unsupported": 0,
+              "partially_supported": 1,
+              "unsupported_claims": [],
+              "partially_supported_claims": [
+                {
+                  "claim": "Speculative decoding uses a smaller auxiliary model to predict tokens ahead of time for verification by the main model",
+                  "valid_source_ids": [
+                    "SRC-004"
+                  ],
+                  "invalid_source_ids": [],
+                  "best_coverage": 0.5
+                }
+              ],
+              "partial_threshold": 0.3,
+              "support_threshold": 0.55,
+              "direction": "lower_is_better"
+            }
+          },
+          "evidence_coverage": {
+            "score": 0.7778,
+            "status": "measured",
+            "method": "Mean of available retrieval-usability and citation-grounding ratios. Retrieval/alignment only; not source authority or factual correctness.",
+            "details": {
+              "retrieval_usability": {
+                "usable_evidence": 9,
+                "search_results": 9,
+                "ratio": 1.0
+              },
+              "citation_grounding": {
+                "grounded_sources": 5,
+                "retrieved_sources": 9,
+                "ratio": 0.5556
+              }
+            }
+          }
+        },
+        "overall_score": 0.7005,
+        "weights_used": {
+          "faithfulness": 0.3,
+          "answer_relevance": 0.2,
+          "contextual_precision": 0.15,
+          "contextual_recall": 0.15,
+          "citation_support": 0.15,
+          "evidence_coverage": 0.05
+        },
+        "measured_components": [
+          "faithfulness",
+          "answer_relevance",
+          "contextual_precision",
+          "contextual_recall",
+          "citation_support",
+          "unsupported_claims",
+          "evidence_coverage"
+        ],
+        "unmeasured_components": [],
+        "limitations": [
+          "All components are deterministic lexical/structural proxies.",
+          "Citation support is not factual verification or entailment.",
+          "Unmeasured components are excluded from the weighting, never imputed as zero.",
+          "Contextual recall requires reference findings; it is not measurable for open-topic runs."
+        ]
+      },
+      "expected_behavior": null,
+      "engine_record": {
+        "record_version": "phase3-evaluation-1.0",
+        "evaluated_at": "2026-11-18T09:10:02+00:00",
+        "mode": "benchmark",
+        "dataset": {
+          "filename": "golden_eval_v1.jsonl",
+          "version": null,
+          "sha256": "edacf9ec8225061ce4d47403301e73c4c06aad1fafb142c67243019cc8b8637e"
+        },
+        "question": {
+          "id": "G005",
+          "domain": "AI",
+          "topic": "Compare the main approaches or options in Speculative Decoding vs Medusa for LLM inference acceleration. What are the key differences and trade-offs?"
+        },
+        "report": {
+          "title": "Comparing Speculative Decoding and Medusa for LLM Inference Acceleration",
+          "word_count": 294,
+          "structured": true,
+          "generation_mode": "json_repaired"
+        },
+        "metrics": {
+          "relevance": {
+            "score": 0.5577,
+            "status": "measured",
+            "method": "Lexical coverage: 0.7 mean(target-aspect token coverage) + 0.3 topic token coverage. Not a semantic or factual score.",
+            "details": {
+              "aspect_coverage": {
+                "Draft Models": 1.0,
+                "Multi-Head Prediction": 0.5,
+                "Tree Verification": 0.0,
+                "Latency Trade-offs": 0.5
+              },
+              "topic_coverage": 0.6923
+            }
+          },
+          "evidence_coverage": {
+            "score": 0.7778,
+            "status": "measured",
+            "method": "Mean of available retrieval-usability and citation-grounding ratios. Retrieval/alignment only; not source authority or factual correctness.",
+            "details": {
+              "retrieval_usability": {
+                "usable_evidence": 9,
+                "search_results": 9,
+                "ratio": 1.0
+              },
+              "citation_grounding": {
+                "grounded_sources": 5,
+                "retrieved_sources": 9,
+                "ratio": 0.5556
+              }
+            }
+          },
+          "citation_quality": {
+            "score": 0.4,
+            "status": "measured",
+            "method": "0.6 × citation precision + 0.4 × claim-citation coverage. Alignment only; neither component proves a claim is true.",
+            "details": {
+              "supported_citations": 0,
+              "unsupported_citations": 2,
+              "citation_precision": 0.0,
+              "claim_citation_coverage": 1.0
+            }
+          },
+          "completeness": {
+            "score": 1.0,
+            "status": "measured",
+            "method": "Structural compliance: 0.75 × required-heading coverage + 0.25 × min(word_count / rubric minimum, 1).",
+            "details": {
+              "sections_present": {
+                "Introduction": true,
+                "Key Points": true,
+                "Applications": true,
+                "Challenges": true,
+                "Conclusion": true,
+                "References": true
+              },
+              "section_ratio": 1.0,
+              "word_count": 294,
+              "minimum_word_count": 250,
+              "word_ratio": 1.0
+            }
+          },
+          "factual_support": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Lexical claim-support proxy: share of verified benchmark claims whose content-token coverage is at least the threshold. Not entailment or factual verification. Unresolved claims are excluded, not promoted.",
+            "details": {
+              "verified_claims": 3,
+              "supported_verified_claims": 2,
+              "support_threshold": 0.55,
+              "claim_results": [
+                {
+                  "claim_id": "Q03-C1",
+                  "status": "verified",
+                  "lexical_coverage": 0.6154,
+                  "supported_proxy": true
+                },
+                {
+                  "claim_id": "Q03-C2",
+                  "status": "verified",
+                  "lexical_coverage": 0.5714,
+                  "supported_proxy": true
+                },
+                {
+                  "claim_id": "Q03-C3",
+                  "status": "verified",
+                  "lexical_coverage": 0.5,
+                  "supported_proxy": false
+                }
+              ],
+              "unresolved_claims": []
+            }
+          }
+        },
+        "overall_score": 0.6638,
+        "component_weights_used": {
+          "relevance": 0.2,
+          "evidence_coverage": 0.2,
+          "citation_quality": 0.2,
+          "completeness": 0.15,
+          "factual_support": 0.25
+        },
+        "measured_components": [
+          "relevance",
+          "evidence_coverage",
+          "citation_quality",
+          "completeness",
+          "factual_support"
+        ],
+        "unmeasured_components": [],
+        "claim_results": [
+          {
+            "claim_id": "Q03-C1",
+            "status": "verified",
+            "lexical_coverage": 0.6154,
+            "supported_proxy": true
+          },
+          {
+            "claim_id": "Q03-C2",
+            "status": "verified",
+            "lexical_coverage": 0.5714,
+            "supported_proxy": true
+          },
+          {
+            "claim_id": "Q03-C3",
+            "status": "verified",
+            "lexical_coverage": 0.5,
+            "supported_proxy": false
+          }
+        ],
+        "unresolved_claims": [],
+        "methodology_notes": [
+          "Scores are lexical/structural measurements with explicit definitions; they are not semantic understanding or factual verification.",
+          "Citation quality measures whether emitted URLs were actually retrieved. A retrieved URL can still be cited for a claim it does not support.",
+          "Factual support is a lexical proxy: in benchmark mode, coverage of verified reference claims; in open-topic mode, coverage of report claims by the excerpts of the sources they cite. It is not entailment, source accuracy, or truth.",
+          "Open-topic claims without usable source evidence are unverifiable and are excluded from the factual-support denominator, never scored as false.",
+          "Claims marked partially_supported or needs_more_evidence are excluded from the factual-support denominator and reported as unresolved. They are never promoted.",
+          "Unmeasured components remain null and are removed from the overall weighting rather than being imputed as zero."
+        ]
+      }
+    },
+    {
+      "case_id": "G014",
+      "question": "Explain the technical mechanisms and implementation details behind Direct Preference Optimization (DPO) vs RLHF with PPO.",
+      "category": "technical_research",
+      "difficulty": "Intermediate",
+      "provenance": "verified_reference",
+      "status": "complete",
+      "error": null,
+      "elapsed_seconds": 411.785,
+      "pipeline_latency_seconds": 411.772,
+      "planner_latency_seconds": 16.982,
+      "research_latency_seconds": 17.099,
+      "editor_latency_seconds": 377.683,
+      "source_count": 9,
+      "retrieved_urls": [
+        "https://deepwiki.com/hykun1989/dpo-grpo-llama-factory/4.3-loss-computation",
+        "https://trentorch.com/ide/lm-dpo-loss",
+        "https://github.com/ishandutta2007/Awesome-DPO",
+        "https://huggingface.co/blog/the_n_implementation_details_of_rlhf_with_ppo",
+        "https://arxiv.org/abs/2403.17031",
+        "https://iclr-blogposts.github.io/2024/blog/the-n-implementation-details-of-rlhf-with-ppo/",
+        "https://www.spheron.network/blog/dpo-vs-ppo-rlhf-algorithm-production-llm-alignment/",
+        "https://medium.com/@bavalpreetsinghh/rlhf-ppo-vs-dpo-26b1438cf22b",
+        "https://huggingface.co/blog/NormalUhr/rlhf-pipeline"
+      ],
+      "relevant_urls": [
+        "https://arxiv.org/abs/2305.18290"
+      ],
+      "generation_mode": "json",
+      "token_usage_delta": {
+        "calls": 2,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "available": false
+      },
+      "retrieval": {
+        "case_id": "G014",
+        "label_status": "available",
+        "ranked_count": 9,
+        "relevant_count": 1,
+        "matched_count": 0,
+        "matched_urls": [],
+        "first_relevant_rank": null,
+        "k_values": [
+          1,
+          3,
+          5,
+          10
+        ],
+        "metrics": {
+          "recall@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@1": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "recall@3": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@3": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@3": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "recall@5": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@5": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@5": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "recall@10": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "precision@10": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "ndcg@10": {
+            "value": 0.0,
+            "status": "measured"
+          },
+          "mrr": {
+            "value": 0.0,
+            "status": "measured"
+          }
+        }
+      },
+      "answer_quality": {
+        "evaluator_version": "answer-quality-1.0",
+        "question": "Explain the technical mechanisms and implementation details behind Direct Preference Optimization (DPO) vs RLHF with PPO.",
+        "report": {
+          "word_count": 306,
+          "source_count": 8,
+          "finding_count": 3
+        },
+        "components": {
+          "faithfulness": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Strict faithfulness: share of verifiable report claims whose cited source excerpts cover the claim at the threshold. Partial support is reported but not counted as full support. Lexical proxy, not entailment.",
+            "details": {
+              "claims_total": 3,
+              "claims_supported": 2,
+              "claims_partially_supported": 1,
+              "claims_unsupported": 0,
+              "claims_unverifiable": 0,
+              "verifiable_claims": 3,
+              "support_threshold": 0.55,
+              "partial_threshold": 0.3,
+              "minimum_evidence_tokens": 5,
+              "claim_results": [
+                {
+                  "claim": "DPO computes a logistic loss on the difference of two log-ratios derived from the optimal solution of KL-regularized objectives in RLHF, eliminating the need for explicit reward modeling",
+                  "source_ids": [
+                    "SRC-002"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-002"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.6667,
+                  "classification": "supported",
+                  "reason": ""
+                },
+                {
+                  "claim": "PPO requires training a reward model followed by reinforcement learning with a KL penalty to maintain policy proximity to a reference model",
+                  "source_ids": [
+                    "SRC-002"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-002"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.6429,
+                  "classification": "supported",
+                  "reason": ""
+                },
+                {
+                  "claim": "DPO achieves comparable performance with reduced computational overhead and fewer feedback data requirements compared to PPO",
+                  "source_ids": [
+                    "SRC-007"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-007"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.3846,
+                  "classification": "partially_supported",
+                  "reason": ""
+                }
+              ],
+              "unresolved_claims": [
+                {
+                  "claim": "DPO achieves comparable performance with reduced computational overhead and fewer feedback data requirements compared to PPO",
+                  "source_ids": [
+                    "SRC-007"
+                  ],
+                  "valid_source_ids": [
+                    "SRC-007"
+                  ],
+                  "invalid_source_ids": [],
+                  "cited": true,
+                  "evidence_coverage": 0.3846,
+                  "classification": "partially_supported",
+                  "reason": ""
+                }
+              ],
+              "partial_credit_score": 0.8333,
+              "strict_faithfulness": 0.6667
+            }
+          },
+          "answer_relevance": {
+            "score": 0.8125,
+            "status": "measured",
+            "method": "Lexical coverage: 0.7 mean(target-aspect token coverage) + 0.3 question-token coverage. Not semantic or factual.",
+            "details": {
+              "aspect_coverage": {
+                "Preference Alignment": 1.0,
+                "Reward Modeling": 1.0,
+                "Policy Optimization": 1.0,
+                "Implicit Reward": 0.5
+              },
+              "topic_coverage": 0.6667
+            }
+          },
+          "contextual_precision": {
+            "score": 1.0,
+            "status": "measured",
+            "method": "Mean per-claim share of cited sources whose title/excerpt lexically covers the claim at the relevance threshold. Citation relevance only; not factual correctness.",
+            "details": {
+              "claims_evaluated": 3,
+              "relevance_threshold": 0.3,
+              "claim_results": [
+                {
+                  "claim": "DPO computes a logistic loss on the difference of two log-ratios derived from the optimal solution of KL-regularized objectives in RLHF, eliminating the need for explicit reward modeling",
+                  "valid_source_ids": [
+                    "SRC-002"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 1,
+                  "cited_sources": 1,
+                  "precision": 1.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-002",
+                      "coverage": 0.6667,
+                      "relevant": true
+                    }
+                  ]
+                },
+                {
+                  "claim": "PPO requires training a reward model followed by reinforcement learning with a KL penalty to maintain policy proximity to a reference model",
+                  "valid_source_ids": [
+                    "SRC-002"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 1,
+                  "cited_sources": 1,
+                  "precision": 1.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-002",
+                      "coverage": 0.6429,
+                      "relevant": true
+                    }
+                  ]
+                },
+                {
+                  "claim": "DPO achieves comparable performance with reduced computational overhead and fewer feedback data requirements compared to PPO",
+                  "valid_source_ids": [
+                    "SRC-007"
+                  ],
+                  "invalid_source_ids": [],
+                  "relevant_sources": 1,
+                  "cited_sources": 1,
+                  "precision": 1.0,
+                  "sources": [
+                    {
+                      "source_id": "SRC-007",
+                      "coverage": 0.3846,
+                      "relevant": true
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "contextual_recall": {
+            "score": 1.0,
+            "status": "measured",
+            "method": "Share of expected reference findings whose content tokens are covered by the report at the threshold. Lexical proxy, not entailment.",
+            "details": {
+              "reference_findings": 2,
+              "supported_findings": 2,
+              "threshold": 0.55,
+              "findings": [
+                {
+                  "reference_finding": "RLHF with PPO requires training a separate reward model and updating the policy via online reinforcement learning.",
+                  "coverage": 0.6154,
+                  "supported": true
+                },
+                {
+                  "reference_finding": "DPO derives a closed-form substitution that directly optimizes the policy network on preference pairs without an explicit reward model.",
+                  "coverage": 0.5714,
+                  "supported": true
+                }
+              ]
+            }
+          },
+          "citation_support": {
+            "score": 0.6667,
+            "status": "measured",
+            "method": "Share of cited findings whose cited source excerpt covers the claim at the threshold. Format validity (valid source ID) is reported separately. Content support is lexical overlap, not entailment.",
+            "details": {
+              "findings": 3,
+              "cited_findings": 3,
+              "format_valid_citations": 3,
+              "content_supported_citations": 2,
+              "citation_format_validity": 1.0,
+              "threshold": 0.55,
+              "results": [
+                {
+                  "claim": "DPO computes a logistic loss on the difference of two log-ratios derived from the optimal solution of KL-regularized objectives in RLHF, eliminating the need for explicit reward modeling",
+                  "valid_source_ids": [
+                    "SRC-002"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.6667,
+                  "content_supported": true
+                },
+                {
+                  "claim": "PPO requires training a reward model followed by reinforcement learning with a KL penalty to maintain policy proximity to a reference model",
+                  "valid_source_ids": [
+                    "SRC-002"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.6429,
+                  "content_supported": true
+                },
+                {
+                  "claim": "DPO achieves comparable performance with reduced computational overhead and fewer feedback data requirements compared to PPO",
+                  "valid_source_ids": [
+                    "SRC-007"
+                  ],
+                  "invalid_source_ids": [],
+                  "has_citation": true,
+                  "format_valid": true,
+                  "best_coverage": 0.3846,
+                  "content_supported": false
+                }
+              ]
+            }
+          },
+          "unsupported_claims": {
+            "score": 0.0,
+            "status": "measured",
+            "method": "Share of checkable findings with no valid content-supported citation. Lower is better. Diagnostic only; not part of the overall weighting.",
+            "details": {
+              "claims": 3,
+              "unsupported": 0,
+              "partially_supported": 1,
+              "unsupported_claims": [],
+              "partially_supported_claims": [
+                {
+                  "claim": "DPO achieves comparable performance with reduced computational overhead and fewer feedback data requirements compared to PPO",
+                  "valid_source_ids": [
+                    "SRC-007"
+                  ],
+                  "invalid_source_ids": [],
+                  "best_coverage": 0.3846
+                }
+              ],
+              "partial_threshold": 0.3,
+              "support_threshold": 0.55,
+              "direction": "lower_is_better"
+            }
+          },
+          "evidence_coverage": {
+            "score": 0.9444,
+            "status": "measured",
+            "method": "Mean of available retrieval-usability and citation-grounding ratios. Retrieval/alignment only; not source authority or factual correctness.",
+            "details": {
+              "retrieval_usability": {
+                "usable_evidence": 9,
+                "search_results": 9,
+                "ratio": 1.0
+              },
+              "citation_grounding": {
+                "grounded_sources": 8,
+                "retrieved_sources": 9,
+                "ratio": 0.8889
+              }
+            }
+          }
+        },
+        "overall_score": 0.8097,
+        "weights_used": {
+          "faithfulness": 0.3,
+          "answer_relevance": 0.2,
+          "contextual_precision": 0.15,
+          "contextual_recall": 0.15,
+          "citation_support": 0.15,
+          "evidence_coverage": 0.05
+        },
+        "measured_components": [
+          "faithfulness",
+          "answer_relevance",
+          "contextual_precision",
+          "contextual_recall",
+          "citation_support",
+          "unsupported_claims",
+          "evidence_coverage"
+        ],
+        "unmeasured_components": [],
+        "limitations": [
+          "All components are deterministic lexical/structural proxies.",
+          "Citation support is not factual verification or entailment.",
+          "Unmeasured components are excluded from the weighting, never imputed as zero.",
+          "Contextual recall requires reference findings; it is not measurable for open-topic runs."
+        ]
+      },
+      "expected_behavior": null,
+      "engine_record": {
+        "record_version": "phase3-evaluation-1.0",
+        "evaluated_at": "2026-11-18T09:16:54+00:00",
+        "mode": "benchmark",
+        "dataset": {
+          "filename": "golden_eval_v1.jsonl",
+          "version": null,
+          "sha256": "edacf9ec8225061ce4d47403301e73c4c06aad1fafb142c67243019cc8b8637e"
+        },
+        "question": {
+          "id": "G014",
+          "domain": "AI",
+          "topic": "Explain the technical mechanisms and implementation details behind Direct Preference Optimization (DPO) vs RLHF with PPO."
+        },
+        "report": {
+          "title": "Technical Implementation Comparison: Direct Preference Optimization (DPO) vs RLHF with PPO",
+          "word_count": 306,
+          "structured": true,
+          "generation_mode": "json"
+        },
+        "metrics": {
+          "relevance": {
+            "score": 0.8125,
+            "status": "measured",
+            "method": "Lexical coverage: 0.7 mean(target-aspect token coverage) + 0.3 topic token coverage. Not a semantic or factual score.",
+            "details": {
+              "aspect_coverage": {
+                "Preference Alignment": 1.0,
+                "Reward Modeling": 1.0,
+                "Policy Optimization": 1.0,
+                "Implicit Reward": 0.5
+              },
+              "topic_coverage": 0.6667
+            }
+          },
+          "evidence_coverage": {
+            "score": 0.9444,
+            "status": "measured",
+            "method": "Mean of available retrieval-usability and citation-grounding ratios. Retrieval/alignment only; not source authority or factual correctness.",
+            "details": {
+              "retrieval_usability": {
+                "usable_evidence": 9,
+                "search_results": 9,
+                "ratio": 1.0
+              },
+              "citation_grounding": {
+                "grounded_sources": 8,
+                "retrieved_sources": 9,
+                "ratio": 0.8889
+              }
+            }
+          },
+          "citation_quality": {
+            "score": 1.0,
+            "status": "measured",
+            "method": "0.6 × citation precision + 0.4 × claim-citation coverage. Alignment only; neither component proves a claim is true.",
+            "details": {
+              "supported_citations": 8,
+              "unsupported_citations": 0,
+              "citation_precision": 1.0,
+              "claim_citation_coverage": 1.0
+            }
+          },
+          "completeness": {
+            "score": 1.0,
+            "status": "measured",
+            "method": "Structural compliance: 0.75 × required-heading coverage + 0.25 × min(word_count / rubric minimum, 1).",
+            "details": {
+              "sections_present": {
+                "Introduction": true,
+                "Key Points": true,
+                "Applications": true,
+                "Challenges": true,
+                "Conclusion": true,
+                "References": true
+              },
+              "section_ratio": 1.0,
+              "word_count": 306,
+              "minimum_word_count": 250,
+              "word_ratio": 1.0
+            }
+          },
+          "factual_support": {
+            "score": 1.0,
+            "status": "measured",
+            "method": "Lexical claim-support proxy: share of verified benchmark claims whose content-token coverage is at least the threshold. Not entailment or factual verification. Unresolved claims are excluded, not promoted.",
+            "details": {
+              "verified_claims": 2,
+              "supported_verified_claims": 2,
+              "support_threshold": 0.55,
+              "claim_results": [
+                {
+                  "claim_id": "Q07-C1",
+                  "status": "verified",
+                  "lexical_coverage": 0.6154,
+                  "supported_proxy": true
+                },
+                {
+                  "claim_id": "Q07-C2",
+                  "status": "verified",
+                  "lexical_coverage": 0.5714,
+                  "supported_proxy": true
+                }
+              ],
+              "unresolved_claims": []
+            }
+          }
+        },
+        "overall_score": 0.9514,
+        "component_weights_used": {
+          "relevance": 0.2,
+          "evidence_coverage": 0.2,
+          "citation_quality": 0.2,
+          "completeness": 0.15,
+          "factual_support": 0.25
+        },
+        "measured_components": [
+          "relevance",
+          "evidence_coverage",
+          "citation_quality",
+          "completeness",
+          "factual_support"
+        ],
+        "unmeasured_components": [],
+        "claim_results": [
+          {
+            "claim_id": "Q07-C1",
+            "status": "verified",
+            "lexical_coverage": 0.6154,
+            "supported_proxy": true
+          },
+          {
+            "claim_id": "Q07-C2",
+            "status": "verified",
+            "lexical_coverage": 0.5714,
+            "supported_proxy": true
+          }
+        ],
+        "unresolved_claims": [],
+        "methodology_notes": [
+          "Scores are lexical/structural measurements with explicit definitions; they are not semantic understanding or factual verification.",
+          "Citation quality measures whether emitted URLs were actually retrieved. A retrieved URL can still be cited for a claim it does not support.",
+          "Factual support is a lexical proxy: in benchmark mode, coverage of verified reference claims; in open-topic mode, coverage of report claims by the excerpts of the sources they cite. It is not entailment, source accuracy, or truth.",
+          "Open-topic claims without usable source evidence are unverifiable and are excluded from the factual-support denominator, never scored as false.",
+          "Claims marked partially_supported or needs_more_evidence are excluded from the factual-support denominator and reported as unresolved. They are never promoted.",
+          "Unmeasured components remain null and are removed from the overall weighting rather than being imputed as zero."
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "Live results depend on DuckDuckGo availability, model version, and host load.",
+    "Answer-quality components are deterministic lexical/structural proxies, not entailment or human judgement.",
+    "Synthetic cases have no verified reference answer; expected-behaviour scores are heuristic.",
+    "A small live sample is not a statistically representative benchmark."
+  ]
+}
