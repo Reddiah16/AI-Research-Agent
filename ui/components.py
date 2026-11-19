@@ -151,6 +151,59 @@ def render_report(
                 "during research. They are not treated as grounded sources."
             )
 
+        findings = getattr(report, "key_findings", []) or []
+        if findings:
+            with st.expander(f"🎯 Key findings and evidence support ({len(findings)})"):
+                for finding in findings:
+                    if not isinstance(finding, dict):
+                        continue
+                    claim = finding.get("claim") or finding.get("text") or ""
+                    if not claim:
+                        continue
+                    source_ids = [
+                        str(sid) for sid in (finding.get("source_ids") or [])
+                        if isinstance(sid, str) and sid
+                    ]
+                    status = finding.get("support_status") or (
+                        "cited" if source_ids else "uncited"
+                    )
+                    suffix = f" — sources: {', '.join(source_ids)}" if source_ids else ""
+                    st.markdown(f"- **[{status}]** {claim}{suffix}")
+                    note = finding.get("support_note")
+                    if note:
+                        st.caption(note)
+
+        details = getattr(report, "source_details", []) or []
+        if details:
+            with st.expander(f"📚 Source provenance ({len(details)} selected sources)"):
+                for detail in details:
+                    if not isinstance(detail, dict):
+                        continue
+                    label = detail.get("source_id") or "source"
+                    title = detail.get("title") or "Untitled"
+                    url = detail.get("url") or ""
+                    st.markdown(f"**{label}** — {title}")
+                    if url:
+                        st.caption(url)
+                    meta = " · ".join(
+                        str(value) for value in (
+                            detail.get("retrieval_method"),
+                            detail.get("fetch_status"),
+                            detail.get("source_type"),
+                        ) if value
+                    )
+                    if meta:
+                        st.caption(meta)
+                context_stats = getattr(report, "_editor_context_stats", {}) or {}
+                if context_stats:
+                    st.caption(
+                        "Editor context: "
+                        f"{context_stats.get('sources_after', '?')} of "
+                        f"{context_stats.get('sources_before', '?')} sources, "
+                        f"~{context_stats.get('approx_tokens_after', '?')} tokens "
+                        "(character/4 estimate)."
+                    )
+
         st.markdown("")
 
         # --- Full markdown report (includes ## References from LLM) ---
@@ -327,8 +380,11 @@ def render_history_report(session_data: dict) -> None:
                     str(sid) for sid in (finding.get("source_ids") or [])
                     if isinstance(sid, str) and sid
                 ]
+                status = finding.get("support_status") or (
+                    "cited" if source_ids else "uncited"
+                )
                 suffix = f" — sources: {', '.join(source_ids)}" if source_ids else ""
-                st.markdown(f"- {claim}{suffix}")
+                st.markdown(f"- **[{status}]** {claim}{suffix}")
 
         unsupported = report.get("unsupported_citations") or []
         if unsupported:

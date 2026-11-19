@@ -196,7 +196,7 @@ def run_reliability_suite() -> Dict[str, Any]:
             config,
             planner=lambda _t, _c: _plan(),
             researcher=lambda p, _c, on_progress=None: [_empty_summary(p.search_queries[0])],
-            editor=lambda _p, _f, _c, on_chunk_callback=None: "# Plain fallback\n\nUnstructured output.",
+            editor=lambda _p, _f, _c, on_chunk_callback=None, source_registry=None: "# Plain fallback\n\nUnstructured output.",
         )
         passed = (
             error is None
@@ -320,7 +320,7 @@ def run_reliability_suite() -> Dict[str, Any]:
         )
 
         # 10. Interrupted report generation: BaseException must not be swallowed.
-        def interrupted(_plan, _facts, _config, on_chunk_callback=None):
+        def interrupted(_plan, _facts, _config, on_chunk_callback=None, source_registry=None):
             raise KeyboardInterrupt("simulated_interrupted_generation")
 
         state, error = _call_pipeline(

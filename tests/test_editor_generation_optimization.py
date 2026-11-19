@@ -180,7 +180,9 @@ class EarlyStopTests(unittest.TestCase):
         self.assertEqual(kwargs["options"]["temperature"], 0.2)
         self.assertEqual(kwargs["options"]["num_predict"], 1200)
         self.assertEqual(kwargs["options"]["repeat_penalty"], 1.08)
-        self.assertEqual(kwargs["options"]["num_ctx"], 8192)
+        # Retrieval optimisation retains more evidence per query, so the Editor
+        # context window was raised from 8192 to 16384 tokens.
+        self.assertEqual(kwargs["options"]["num_ctx"], 16384)
 
     def test_default_max_tokens_preserved(self):
         _, client = self._run(padded_chunks({"a": 1}))

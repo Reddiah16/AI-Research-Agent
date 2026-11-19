@@ -32,13 +32,20 @@ class JSONGenerationError(ValueError):
 
 
 @lru_cache
-def get_client_cached(host: str) -> Client:
-    return Client(host=host)
+def get_client_cached(host: str, timeout: float) -> Client:
+    """Return a cached Ollama client for a host/timeout pair.
+
+    The timeout is a runaway guard. It is intentionally generous by default
+    (``LLM_REQUEST_TIMEOUT_SECONDS=1800``) because local CPU inference can be
+    slow; it must not silently turn a hardware-bound run into a fake success.
+    """
+    return Client(host=host, timeout=timeout)
 
 
 def get_client(config: ResearchConfig) -> Client:
     """Create an Ollama client from config."""
-    return get_client_cached(config.ollama_host)
+    timeout = float(getattr(config, "llm_request_timeout_seconds", 1800.0) or 1800.0)
+    return get_client_cached(config.ollama_host, max(1.0, timeout))
 
 
 def check_ollama_connection(config: ResearchConfig) -> bool:
@@ -167,7 +174,11 @@ def ollama_generate_stream(
 # implicit default context.
 _JSON_GENERATION_OPTIONS = {
     "repeat_penalty": 1.08,
-    "num_ctx": 8192,
+    # The retrieval optimisation retains up to 5 evidence items per query
+    # across ~6 queries, so the Editor prompt is larger than before. 16384
+    # keeps prompt + 1200-token JSON output inside the context window while
+    # remaining well below qwen3's native window.
+    "num_ctx": 16384,
 }
 
 

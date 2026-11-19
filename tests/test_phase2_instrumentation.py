@@ -5,7 +5,7 @@ Verifies:
   2. Compatibility with legacy rows where timing and telemetry values are NULL.
   3. Node-level duration tracking (planner, research, editor, search network).
   4. Search network duration measurement.
-  5. Editor JSON generation token limit is exactly 1200 (not 600, 1500, 2000 or 2048).
+  5. Editor token caps are configurable with approved defaults (1000 JSON / 700 markdown).
   6. Source-grounding instrumentation (exact, normalized, phantom, empty-safe).
   7. save_session persists all Phase 2 telemetry fields.
   8. 40-question benchmark dataset structure, taxonomy, and safety flags.
@@ -248,12 +248,13 @@ def test_node_latency_and_search_duration_tracking():
 
 
 def test_editor_token_limit_configuration():
-    """Verify Editor JSON generation max_tokens is exactly 1200 (approved cap).
+    """Verify Editor JSON generation uses an explicit, configurable cap.
 
-    The approved value was reduced from 2000 to 1200 alongside the streaming
-    early-stop optimization. This test still guards the original intent: the
-    Editor JSON cap must be one exact approved value, never the rejected 600 or
-    2048 values, and never a silent return to the old 1500/2000 expectations.
+    The original approved value was 1200 after the streaming early-stop
+    optimisation. Phase 3 makes the cap configurable so it can be lowered for
+    smaller local models without a code change. This test still guards the
+    original intent: the Editor JSON cap must come from an approved config
+    field with a safe default, never a rejected hardcoded value.
     """
     print("=" * 60)
     print("TEST 4: Editor JSON generation token limit configuration")
@@ -264,12 +265,25 @@ def test_editor_token_limit_configuration():
     with open(editor_path, "r", encoding="utf-8") as f:
         source = f.read()
 
-    assert "max_tokens=1200" in source, "editor_agent.py must configure max_tokens=1200"
-    assert "max_tokens=600" not in source, "editor_agent.py should no longer contain max_tokens=600"
-    assert "max_tokens=1500" not in source, "max_tokens=1500 is the superseded stale expectation"
-    assert "max_tokens=2000" not in source, "max_tokens must not revert to the pre-optimization 2000 cap"
-    assert "max_tokens=2048" not in source, "max_tokens must not be increased to 2048 without approval"
-    print("  ✓ Confirmed editor_agent.py sets max_tokens=1200 strictly as approved")
+    config = ResearchConfig()
+    assert config.editor_max_json_tokens == 1000, (
+        "ResearchConfig.editor_max_json_tokens must default to the approved 1000 cap"
+    )
+    assert config.editor_max_markdown_tokens == 700, (
+        "ResearchConfig.editor_max_markdown_tokens must default to the approved 700 cap"
+    )
+    assert "max_tokens=json_max_tokens" in source, (
+        "editor_agent.py must pass the configured JSON cap to the model"
+    )
+    assert "max_tokens=markdown_max_tokens" in source, (
+        "editor_agent.py must pass the configured markdown cap to the model"
+    )
+    for forbidden in ("max_tokens=600", "max_tokens=1200", "max_tokens=1500",
+                      "max_tokens=2000", "max_tokens=2048"):
+        assert forbidden not in source, (
+            f"editor_agent.py must not hardcode {forbidden}; the cap is configurable"
+        )
+    print("  ✓ Confirmed Editor token caps are configurable with approved defaults")
 
 
 def test_source_grounding_instrumentation():

@@ -20,6 +20,7 @@ are required.
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Problem Statement](#problem-statement)
 - [Key Features](#key-features)
 - [System Architecture](#system-architecture)
 - [Technology Stack](#technology-stack)
@@ -28,6 +29,7 @@ are required.
 - [Persistence and Migrations](#persistence-and-migrations)
 - [Evaluation Engine](#evaluation-engine)
 - [Evaluation and Benchmarking Framework](#evaluation-and-benchmarking-framework)
+- [Phase 3 Results](#phase-3-results)
 - [Security Evaluation](#security-evaluation)
 - [Verification Status](#verification-status)
 - [Project Structure](#project-structure)
@@ -52,12 +54,6 @@ structured Markdown report (Introduction, Key Points, Applications, Challenges,
 Conclusion, References). Each run is saved to PostgreSQL and can be reviewed,
 downloaded, and compared in the analytics and evaluation tabs.
 
-**The problem it addresses.** Chatbots answer from model weights alone and cannot
-cite current web sources or keep a durable, queryable history of what was
-researched. This project turns research into a bounded, observable pipeline:
-every run records its plan, evidence, sources, timings, citation alignment,
-evaluation scores, and generated report.
-
 **Why a multi-agent architecture.** Each stage is a separate concern with a
 different failure mode and prompt. `planner`, `researcher`, and `editor` are
 dedicated LangGraph nodes, so each step is observable in the UI and can degrade
@@ -70,14 +66,32 @@ factual verification. See [Known Limitations](#known-limitations-and-production-
 
 ---
 
+## Problem Statement
+
+A chat model answers from its weights. It cannot, by itself, retrieve current web
+pages, show which page supports each statement, or retain a durable, queryable
+record of what was searched and written. Adding retrieval is not enough either:
+an unconstrained retrieval pipeline can flood a small local model with dozens of
+sources, produce citations to pages it never fetched, and hide whether a claim is
+actually supported by the cited text.
+
+This project treats research as a bounded, observable pipeline. Every run records
+its plan, search queries, retrieved sources, fetch outcomes, evidence passed to
+the Editor, generated report, timings, citation diagnostics, and evaluation
+scores. The goal is not to claim factual truth, but to make each stage, and each
+citation, inspectable and reproducible on local hardware.
+
+---
+
 ## Key Features
 
 | Feature | Where | What it does |
 |---|---|---|
 | Multi-agent workflow | `graph/workflow.py` | Linear LangGraph graph: `START → planner → researcher → editor → END` over a shared `GraphState` |
-| Research planning | `agents/triage_agent.py` | Generates search queries and focus areas as a validated `ResearchPlan` (JSON mode with rule-based fallback) |
-| Bounded web research | `agents/research_agent.py`, `tools/web_search.py`, `tools/page_fetcher.py` | DuckDuckGo search via `ddgs`, bounded retries, page-fetch budget, robots.txt policy, DNS safety |
-| Evidence and provenance | `tools/research_evidence.py` | Deduplicated source registry with stable `SRC-###` IDs, excerpts, retrieval method, fetch status, and relevance |
+| Research planning | `agents/triage_agent.py` | Generates six diverse retrieval-intent queries (academic, docs, entity expansion, comparison, implementation, survey) as a validated `ResearchPlan`, with a deterministic diverse fallback |
+| Bounded web research | `agents/research_agent.py`, `tools/web_search.py`, `tools/page_fetcher.py` | DuckDuckGo search (10 results/query), redirect filtering, cross-query deduplication, bounded retries, page-fetch budget, robots.txt policy, DNS safety |
+| Source ranking | `tools/source_ranking.py` | Deterministic additive scoring (lexical relevance, query coverage, entity/title match, authority, position) with logged components and no hard allowlist |
+| Evidence and provenance | `tools/research_evidence.py` | Canonical URL keys (arXiv/DOI variants collapse), deduplicated source registry with stable `SRC-###` IDs, excerpts, retrieval method, fetch status, and relevance |
 | Structured report generation | `agents/editor_agent.py` | JSON-first `ResearchReport` with Markdown fallback, JSON repair, streaming early stop, and citation sanitisation |
 | Local LLM execution | `generation/llm.py` | Ollama chat, JSON, and streaming helpers against `qwen3:4b` by default |
 | PostgreSQL history | `database/database.py` | `research_sessions`, `research_reports`, `research_sources`; idempotent `run_id` writes and additive migrations |
@@ -85,7 +99,7 @@ factual verification. See [Known Limitations](#known-limitations-and-production-
 | Citation grounding | `tools/grounding.py` | Separates retrieved, grounded, and phantom URLs; measures claim-citation coverage without claiming truth |
 | Evaluation engine | `evaluation/` | Reproducible lexical/structural scores plus deterministic factual-support checks |
 | Golden evaluation dataset | `benchmarks/datasets/golden_eval_v1.jsonl` | 118 cases across eight research categories; 78 verified-reference and 40 synthetic |
-| Retrieval metrics | `evaluation/retrieval.py` | Recall@K, Precision@K, MRR, NDCG@K with explicit missing-label handling |
+| Retrieval metrics | `evaluation/retrieval.py` | Registry Recall@K, Precision@K, MRR, NDCG@K plus versioned candidate-pool recall (search / ranked / retained), with explicit missing-label handling |
 | Answer-quality metrics | `evaluation/answer_quality.py` | Faithfulness, relevance, contextual precision/recall, citation support, unsupported claims, evidence coverage |
 | Security suite | `evaluation/security.py` | 40 labelled cases across eight attack categories with deterministic probes and optional live probes |
 | Reliability suite | `evaluation/reliability.py` | Ten graceful-failure scenarios on temporary SQLite |
@@ -99,44 +113,54 @@ factual verification. See [Known Limitations](#known-limitations-and-production-
 
 ```mermaid
 flowchart TD
-    U[User query] --> UI[Streamlit interface]
-    UI --> PL[Planner / Triage Agent]
-    PL --> RS[Research Agent]
-    RS --> DDG[DuckDuckGo search<br/>ddgs + bounded page fetch]
-    DDG --> RS
-    RS --> EV[Evidence registry<br/>SRC IDs · excerpts · provenance]
-    EV --> ED[Editor Agent]
-    ED --> RP[Structured ResearchReport<br/>findings · sources · citations]
-    RP --> GR[Grounding + evaluation]
-    RP --> DB[(PostgreSQL<br/>sessions · reports · sources)]
-    GR --> DB
-    DB --> UI
+    U[User query] --> ST[Streamlit interface<br/>Research · Report · History · Analytics · Evaluation]
+    ST --> LG[LangGraph workflow<br/>shared GraphState · per-stage timing]
 
-    subgraph SUPPORT[Supporting components]
-      PT[Telemetry<br/>node latencies · status]
-      AN[Analytics + Evaluation views]
+    subgraph GRAPH[Three-node LangGraph pipeline]
+      LG --> PL[Planner<br/>triage_agent.py]
+      PL --> RS[Researcher<br/>research_agent.py]
+      RS --> SF[Search / fetch<br/>DuckDuckGo · robots.txt · DNS safety]
+      SF --> RK[Ranking + deduplication<br/>source_ranking.py]
+      RK --> EV[Evidence registry<br/>SRC-### IDs · excerpts · provenance]
+      EV --> ES[Evidence selection<br/>budget · near-duplicate suppression]
+      ES --> ED[Editor<br/>editor_agent.py]
+      ED --> CI[Citation integrity<br/>valid IDs · content support · source consistency]
+      CI --> RP[Structured ResearchReport<br/>findings · cited/displayed sources]
     end
-    PT --> DB
-    DB --> AN
+
+    RP --> GR[Grounding + deterministic evaluation]
+    RP --> DB[(PostgreSQL<br/>research_sessions · research_reports · research_sources)]
+    GR --> DB
+    DB --> ST
+    DB --> AN[Analytics + Evaluation views]
+    AN --> ST
 ```
 
-The graph edges are defined in `build_research_graph()`. Per-query web search is
-a loop inside the Research node; retrieval is sequential, not parallel.
+The graph itself is linear: `START → planner → researcher → editor → END`
+(`build_research_graph()` in `graph/workflow.py`). Search, ranking, evidence
+selection, and citation integrity are stages inside the Researcher and Editor
+nodes, not additional graph nodes. Query retrieval is sequential, not parallel.
 
 ### Agent responsibilities
 
 - **Planner (`agents/triage_agent.py`)** reads the topic and returns a
-  `ResearchPlan` containing 1–5 search queries and focus areas. It requests JSON
-  and has a deterministic rule-based fallback.
-- **Researcher (`agents/research_agent.py`)** executes each query, applies
-  relevance filtering, fetches a bounded number of pages, falls back to search
-  snippets when fetching fails, and returns per-query evidence bundles. It does
-  not re-summarise every page with the LLM; synthesis happens in the Editor.
+  `ResearchPlan` containing six diverse queries and focus areas. It requests
+  JSON with a larger token budget, validates and de-duplicates the output,
+  rejects URLs, arXiv identifiers, and benchmark-style "verified facts"
+  phrasing, and falls back to a deterministic six-intent plan.
+- **Researcher (`agents/research_agent.py`)** executes each query, rejects
+  advertisement/click-tracking redirectors, ranks candidates deterministically,
+  deduplicates across queries before spending fetch budget, fetches a bounded
+  number of pages, falls back to search snippets when fetching fails, and
+  returns per-query candidate pools plus evidence bundles. It does not
+  re-summarise every page with the LLM; synthesis happens in the Editor.
 - **Editor (`agents/editor_agent.py`)** receives the plan plus a provenance-rich
-  evidence bundle (source IDs, URLs, retrieval method, excerpts). It asks the
-  local model for a source-linked JSON report, repairs truncated JSON when
-  possible, sanitises citations, and falls back to Markdown or an honest
-  no-evidence report.
+  evidence bundle (source IDs, URLs, retrieval method, excerpts). It applies a
+  deterministic source/character budget and near-duplicate suppression before
+  generation, asks the local model for a source-linked JSON report, then verifies
+  citation IDs/content support and optionally binds an already-shown source.
+  Truncated JSON is repaired when possible; the node falls back to Markdown or an
+  honest no-evidence report.
 - **Workflow nodes (`graph/workflow.py`)** time each stage, build the source
   registry, run grounding, run open-topic evaluation, and return the final
   `GraphState`.
@@ -170,9 +194,10 @@ Versions match `requirements.txt`. The verified interpreter is Python 3.13.13.
 
 ### Home page
 
-The topic input and sidebar with the active model, Ollama host, and pipeline info.
+The topic input, sidebar with the active model/Ollama host, saved research
+history, and the five application tabs.
 
-![Home page](screenshots/home_page.png)
+![Home page](screenshots/home_page_current.jpg)
 
 ### Research workflow
 
@@ -218,6 +243,19 @@ Full dashboard:
 
 ![Full analytics dashboard](screenshots/analytics_final_dashboard.png)
 
+### Evaluation results
+
+The Evaluation tab reads persisted scores from PostgreSQL and the latest local
+benchmark artifacts from `benchmarks/results/`. Unmeasured values are shown as
+`—`, never as zero.
+
+![Evaluation results](screenshots/evaluation_results.jpg)
+
+> The `Cases: 118` card is the size of the constructed golden dataset. The live
+> evaluation behind the `Answer overall: 0.5694` card executed **three cases in
+> that run**, not all 118. The artifact cards are labelled with mode and
+> generation time so mocked and live values are not mixed.
+
 ---
 
 ## Research Quality: RAG, Grounding, and Citation Validation
@@ -234,10 +272,81 @@ Retrieved as: fetched_page (ok)
 Evidence excerpt: <the query-relevant sentence(s)>
 ```
 
+The retrieval pipeline is staged and configurable:
+
+1. **Search** — 10 DuckDuckGo results per query, 6 planned queries
+   (`SEARCH_MAX_RESULTS`, `PLANNER_NUM_QUERIES`).
+2. **Normalise and canonicalise** — malformed records are dropped; arXiv
+   `abs`/`html`/`pdf`/`format` views and version suffixes collapse to one stable
+   work key, and the abstract URL is preferred for citation and fetching.
+   DOI and tracking-parameter variants are also normalised. Distinct arXiv IDs
+   are never merged, and the original provider URL is preserved for audit.
+3. **Filter and rank** — advertisement/click redirectors are rejected, then
+   `tools/source_ranking.py` additively scores lexical relevance, query
+   coverage, entity/title matches, authority, and result position. Academic
+   repositories, official documentation, and relevant GitHub repositories gain
+   authority; listicles and unrelated social posts lose score. Legitimate
+   independent blogs remain eligible. Every component is logged.
+4. **Retain and fetch** — up to 5 evidence items per query, with at most 4 page
+   fetches per query and a hard run-wide cap
+   (`MAX_EVIDENCE_ITEMS_PER_QUERY`, `MAX_PAGES_PER_QUERY`,
+   `MAX_TOTAL_PAGES_PER_RUN`). Cross-query duplicates are skipped before fetch
+   budget is spent. HTTP 429 responses receive bounded retry/backoff; failures
+   fall back to the search snippet.
+5. **Measure** — registry recall is kept unchanged, and candidate-pool recall is
+   reported separately for search order, ranked order, and retained evidence so
+   a miss can be attributed to search, ranking, or retention.
+
 The model is instructed to cite `SRC-###` identifiers in `key_findings` and to
 list only URLs it used. Evidence excerpts are bounded and HTML-cleaned; page
-fetching is capped per run (`MAX_TOTAL_PAGES_PER_RUN`, default 12) and respects
-`robots.txt` when enabled.
+fetching respects `robots.txt` when enabled. Fetching never bypasses robots
+controls and does not use browser automation or PDF parsing.
+
+### Editor evidence selection and context budget
+
+Retrieval intentionally retains more evidence than a 4B local model can use
+well. Before generation, `tools/evidence_selection.py` deterministically:
+
+1. scores each registry source by ranking score, authority, lexical relevance,
+   fetch success, and usable content length;
+2. suppresses near-duplicate pages (same excerpt or title+excerpt shingles under
+   different URLs);
+3. selects a diverse subset round-robin across queries, then by score;
+4. enforces source and character budgets while retaining stable `SRC-*` IDs and
+   a minimum number of sources.
+
+Defaults are `EDITOR_MAX_SOURCES=12`, `EDITOR_MIN_SOURCES=3`,
+`EDITOR_MAX_CONTEXT_CHARS=14000`, and `EDITOR_EXCERPT_CHARS=700`. The Editor
+logs sources, characters, and approximate tokens before and after selection.
+Token figures are explicitly labelled `characters / 4` estimates, not provider
+token counts. Selection never renumbers IDs, so citations keep their meaning.
+
+### Citation integrity and evidence-based binding
+
+`tools/citation_integrity.py` adds checks that go beyond "was this URL
+retrieved?":
+
+- `format_valid` — the finding cites at least one source ID present in the
+  registry;
+- `content_supported` — the cited title/excerpt covers the claim at the
+  configured lexical threshold;
+- **displayed sources** — unique canonical URLs in the report; **cited
+  sources** — unique sources referenced by findings. Every cited source is kept
+  in the displayed list, so `cited <= displayed`.
+- snippet-only versus fetched shares, source-type diversity, and URL-variant
+  collapse are reported.
+
+When binding is enabled (`EDITOR_BIND_CITATIONS=true`), a claim whose cited
+source does not cover it may gain **another already-retrieved source** whose
+excerpt does cover it. Only sources that were actually shown to the Editor can
+be bound. No URL, identifier, or source text is invented; the model's original
+IDs and any invalid IDs are retained on the finding for audit. When binding is
+disabled, unsupported claims stay unsupported rather than being force-cited.
+
+If measured evidence support is incomplete, a deterministic `## Limitations`
+note is inserted before `## References` (`EDITOR_APPEND_LIMITATIONS=true`). The
+note is derived only from measured counts and is skipped if the report already
+has a Limitations section.
 
 ### Citation validation and grounding
 
@@ -251,7 +360,8 @@ fetching is capped per run (`MAX_TOTAL_PAGES_PER_RUN`, default 12) and respects
   from supported sources.
 
 Citation alignment is **not** factual verification. A retrieved URL can still be
-cited for a statement it does not support, and a model can misread a page.
+cited for a statement it does not support, and a model can misread a page. The
+content-support check is a lexical proxy, not entailment.
 
 ### Word count
 
@@ -370,12 +480,17 @@ security, reliability, and performance without changing the LangGraph pipeline o
 the database schema. Full methodology is in
 [`docs/EVALUATION_FRAMEWORK.md`](docs/EVALUATION_FRAMEWORK.md); measured values are
 in [`docs/BENCHMARK_RESULTS.md`](docs/BENCHMARK_RESULTS.md) and
-[`docs/FINAL_METRICS_REPORT.md`](docs/FINAL_METRICS_REPORT.md).
+[`docs/FINAL_METRICS_REPORT.md`](docs/FINAL_METRICS_REPORT.md). The retrieval
+diagnosis and the implemented optimization are documented in
+[`docs/RETRIEVAL_DIAGNOSTIC_REPORT.md`](docs/RETRIEVAL_DIAGNOSTIC_REPORT.md) and
+[`docs/RETRIEVAL_OPTIMIZATION_REPORT.md`](docs/RETRIEVAL_OPTIMIZATION_REPORT.md);
+the Editor evidence-selection and citation-integrity work is in
+[`docs/PHASE_3_FINAL_OPTIMIZATION_REPORT.md`](docs/PHASE_3_FINAL_OPTIMIZATION_REPORT.md).
 
 | Area | Component | Status |
 |---|---|---|
 | Golden dataset | 118 cases, 8 categories, 78 verified-reference, 40 synthetic | Validated |
-| Retrieval | Recall@K, Precision@K, MRR, NDCG@K | Measured on 3 live cases |
+| Retrieval | Registry Recall@K, Precision@K, MRR, NDCG@K; candidate-pool recall for search / ranked / retained pools | Measured on 3 live cases |
 | Answer quality | Faithfulness, relevance, contextual precision/recall, citation support, unsupported claims, evidence coverage | Measured on 3 live cases |
 | Security | 40 deterministic cases, 8 categories | 40/40 deterministic probes passed |
 | Reliability | 10 graceful-failure scenarios | 10/10 passed |
@@ -385,6 +500,12 @@ in [`docs/BENCHMARK_RESULTS.md`](docs/BENCHMARK_RESULTS.md) and
 Missing labels and unavailable measurements are reported as `not_measured` or
 `not_measurable`, never as zero. Mocked and live results are stored in separate
 artifacts.
+
+Retrieval metrics are explicitly versioned. The historical registry metric
+(`retrieval-registry-1.0`) is computed exactly as before, so old artifacts stay
+comparable. Candidate-pool metrics (`retrieval-candidate-pool-1.0`) answer a
+different question — did search, ranking, or retention ever see the labelled
+URL — and are reported beside, not instead of, the registry metric.
 
 ```powershell
 py -3.13 benchmarks/run_golden_evaluation.py --mode mocked
@@ -396,6 +517,66 @@ py -3.13 benchmarks/run_performance_benchmark.py --repetitions 8 --warmup 2 --co
 The Streamlit Evaluation tab now reads the latest artifacts from
 `benchmarks/results/` in an **Offline benchmark artifacts** section. Missing files
 are labelled; no value is synthesised.
+
+---
+
+## Phase 3 Results
+
+Phase 3 added deterministic Editor evidence selection, citation-integrity checks,
+evidence-based citation binding, and versioned context/latency diagnostics. The
+full implementation, algorithm, and artifact index are in
+[`docs/PHASE_3_FINAL_OPTIMIZATION_REPORT.md`](docs/PHASE_3_FINAL_OPTIMIZATION_REPORT.md).
+The numbers below are transcribed from the artifacts named in
+[`docs/BENCHMARK_RESULTS.md`](docs/BENCHMARK_RESULTS.md).
+
+### Dataset and verification evidence
+
+| Evidence | Result | Scope |
+|---|---|---|
+| Golden evaluation dataset | **118 cases** across 8 categories (78 verified-reference, 40 synthetic) | Constructed dataset; SHA-256 unchanged |
+| Reported test checks | **305 passed, 0 failed** | 232 unittest discovery + 44 dataset + 9 analytics + 7 persistence + 6 performance + 7 instrumentation |
+| Deterministic security suite | **40/40 checks passed** | Evidence about 40 probes on this code version, not a security certification |
+| Deterministic reliability suite | 10/10 scenarios passed | Temporary SQLite; not production PostgreSQL failover |
+
+### Live three-case measurements
+
+| Measure | Result | Scope |
+|---|---|---|
+| Answer-quality proxy (overall) | **0.6351** (run 1); **0.5694** (run 2) | Three cases per run; deterministic lexical/structural proxy |
+| Citation precision | **1.0000** in both runs | Valid references / all references |
+| Citation coverage | **1.0000** in both runs | Findings carrying at least one valid source ID |
+| Registry Recall@10 | **0.5000** in both runs | Strict exact-URL labels |
+| Editor context reduction | 28.67 → 12.0 sources and 24,697 → 10,253 chars (run 1); 26.67 → 12.0 sources and 22,539 → 9,667 chars (run 2) | Deterministic pre-generation selection; **~56–58%** smaller prompt |
+| Editor median latency | **427.19 s** across the six Phase 3 Editor measurements | Not a per-run value; six stage measurements from the two runs |
+| End-to-end median | **502.88 s** (run 1); **567.08 s** (run 2) | Three cases per run; heavy-tailed distribution |
+
+For context, the historical three-case baseline answer-quality proxy was **0.7402**;
+the retrieval-only rerun before Phase 3 scored **0.4379**. Phase 3 recovered part of
+that loss but did **not** exceed the historical baseline. The combined Phase 3 mean
+of the two runs is 0.6023; it is a mean of two three-case observations, not a
+six-case sample.
+
+### Required qualifications
+
+- **The live evaluation used three cases per run** (`G001`, `G005`, `G014`). The
+  **full 118-case live golden evaluation was not run.** The 118 figure describes
+  dataset construction, not executed live coverage.
+- The two Phase 3 runs are **observational repeats**, not a controlled A/B.
+  Search results, host load, and stage timing vary between runs; no causal
+  attribution is made.
+- The **answer-quality proxy is not human factual evaluation**. It measures
+  lexical/structural overlap and deterministic support heuristics. No human review
+  and no LLM-judge score were produced.
+- **Citation integrity does not prove factual accuracy.** It verifies that a
+  citation ID exists, that the cited excerpt lexically covers the claim at a
+  threshold, and that displayed sources include cited sources. It cannot detect
+  negation, subtle misattribution, or a source that is itself wrong.
+- **Latency outliers remain.** Run 1 contained a 3,013.84 s Editor case; run 2
+  contained a 4,595.48 s research/fetch stall. With three samples, the median and
+  per-stage breakdown are the defensible summaries; the mean and P95 are unstable.
+- These results support a portfolio demonstration of a measured pipeline. They do
+  **not** establish production readiness, general model quality, or a universal
+  speed-up.
 
 ---
 
@@ -423,17 +604,18 @@ See [`docs/SECURITY_EVALUATION.md`](docs/SECURITY_EVALUATION.md).
 
 ## Verification Status
 
-Verified on this workstation on 2026-11-18. This is evidence for the listed
+Verified on this workstation on 2026-11-18, with retrieval-optimization and
+Phase 3 Editor/citation reruns on 2026-11-19. This is evidence for the listed
 scopes only; it is not a production-readiness claim.
 
 | Area | Status | Evidence |
 |---|---|---|
-| Unit/regression suites | Verified | 55 framework checks + 182 existing checks + 7 instrumentation checks, 0 failed |
+| Unit/regression suites | Verified | 232 unittest tests (including 33 retrieval-optimisation and 33 Phase 3 editor/citation tests) + 44 dataset + 9 analytics + 7 persistence + 6 performance + 7 instrumentation checks, 0 failed |
 | Dataset structural validator | Verified | `validate_dataset.py --dataset benchmarks/datasets/benchmark_v3.json`: 29/29 checks PASS (default v1: 15/15) |
 | Dataset integrity | Verified | v1/v2/v3 SHA-256 hashes unchanged |
 | Golden dataset | Verified | 118 cases, 8/8 categories, 78 verified-reference, 40 synthetic, 78 labels available |
 | Retrieval metric self-check | Verified | 6/6 deterministic fixture checks passed |
-| Live golden evaluation | Verified on 3 cases | G001/G005/G014 completed; overall answer score 0.7402; exact-URL Recall@5 0.1667 (one label found) |
+| Live golden evaluation | Verified on 3 cases, 2 Phase 3 repeats | Baseline G001/G005/G014: exact-URL Recall@5 0.1667, MRR 0.1667, answer score 0.7402. Retrieval-only rerun: Recall@5 0.2500, Recall@10 0.5833, answer score 0.4379. Phase 3 (2 runs, same labels): Recall@10 0.5000/0.5000, answer score 0.6351/0.5694, citation precision 1.0/1.0. Observational, single-host, high latency variance |
 | Security suite | Verified (deterministic) | 40/40 probes passed across 8 categories |
 | Security live probes | Measured, failing | 6 probes: 0 reports, 3 prompt-leak flags, 3 inconclusive; not merged with deterministic score |
 | Reliability suite | Verified (deterministic) | 10/10 scenarios passed on temporary SQLite |
@@ -441,6 +623,8 @@ scopes only; it is not a production-readiness claim.
 | Migration and persistence | Verified | Temporary SQLite migration, round-trip, legacy-NULL, duplicate-save, and rollback tests |
 | Word-count accuracy | Verified | Regression tests; stored value equals `count_words(report)` |
 | Open-topic factual support | Verified (deterministic) | Supported / partial / unsupported / unverifiable / empty / insufficient-evidence tests |
+| Editor evidence budget | Verified (deterministic) | Source/character budgeting, near-duplicate suppression, stable IDs, black-box integration |
+| Citation integrity | Verified (deterministic) | Invalid-ID removal, evidence-text support, evidence-based binding, URL-variant collapse, displayed/cited consistency |
 | Streamlit startup | Verified | Headless server health check (see final report) |
 | Live end-to-end research run | Verified | 3 live golden runs plus earlier pipeline runs |
 | Full 118-case live golden evaluation | **Not run** | Only 3 live cases plus mocked validation |
@@ -468,7 +652,7 @@ RESEARCH_AGENT/
 ├── schemas/              # Pydantic models
 ├── screenshots/          # documentation images
 ├── tests/                # unit, regression, instrumentation, hardening suites
-├── tools/                # search, page fetch, evidence, grounding, parsing
+├── tools/                # search, page fetch, evidence, ranking, grounding, parsing
 ├── ui/                   # Streamlit components, analytics, evaluation view
 ├── .env.example          # configuration template (tracked)
 ├── .env                  # real credentials (git-ignored)
@@ -492,7 +676,12 @@ Important modules:
 - **`ui/evaluation_artifacts.py`** loads timestamped benchmark JSON for the
   Streamlit Evaluation tab.
 - **`tools/page_fetcher.py`** implements bounded fetch, DNS safety, robots.txt
-  policy, deduplication, and error classification.
+  policy, deduplication, error classification, and bounded HTTP 429 retry.
+- **`tools/source_ranking.py`** implements the deterministic additive source
+  ranker, authority/type classification, and per-component score logging.
+- **`tools/research_evidence.py`** implements scholarly URL canonicalisation,
+  redirect/ad detection, cross-query evidence deduplication, and the ranked
+  source registry.
 - **`ui/evaluation_view.py`** renders persisted scores and shows `—` for
   unmeasured values.
 
@@ -528,10 +717,30 @@ python -m py_compile evaluation\metrics.py evaluation\engine.py evaluation\store
 
 **2. Configure PostgreSQL**
 
-Create a database (for example `ai_research_agent`) and a connection string.
+Install PostgreSQL, start the server, and create an empty database (for example
+`ai_research_agent`). Either use pgAdmin, or open `psql` (the Windows "SQL Shell")
+and run:
+
+```powershell
+psql -U postgres
+```
+
+```sql
+CREATE DATABASE ai_research_agent;
+\q
+```
+
+Build the SQLAlchemy URL with your own user, password, host, and database name:
+
+```text
+postgresql://<db_user>:<db_password>@<host>:5432/<database_name>
+```
+
+Percent-encode special characters in a password (for example `@` as `%40`).
 Tables and additive columns are created automatically by `init_database()` on
-first run; you only need the database itself. No manual migration command is
-required.
+first run; no manual migration command is required. SQLite can be used as a
+local test fallback, but the analytics/evaluation path is verified against
+PostgreSQL.
 
 **3. Configure environment**
 
@@ -549,10 +758,11 @@ Install Ollama (https://ollama.com), make sure it is running at
 
 ```powershell
 ollama pull qwen3:4b
+ollama list        # confirm qwen3:4b is present
 ```
 
-If you use a different model, update `llm_model` in `config/config.py` or set the
-corresponding environment variable used by your deployment.
+If you use a different model, update `llm_model` in `config/config.py`. The
+default is `qwen3:4b`; the application does not require a cloud API key.
 
 ---
 
@@ -566,7 +776,15 @@ DATABASE_URL=postgresql://<db_user>:<db_password>@<host>:5432/<database_name>
 
 # Research quality (defaults shown)
 ENABLE_PAGE_FETCH=true
-MAX_TOTAL_PAGES_PER_RUN=12
+SEARCH_MAX_RESULTS=10
+PLANNER_NUM_QUERIES=6
+PLANNER_MAX_TOKENS=512
+MAX_EVIDENCE_ITEMS_PER_QUERY=5
+MAX_PAGES_PER_QUERY=4
+MAX_TOTAL_PAGES_PER_RUN=24
+ENABLE_SOURCE_RANKING=true
+FETCH_429_MAX_RETRIES=2
+FETCH_429_BACKOFF=1.0
 RESPECT_ROBOTS_TXT=true
 ENFORCE_DNS_SAFETY=true
 SEARCH_MAX_RETRIES=2
@@ -574,6 +792,18 @@ SEARCH_MAX_RETRIES=2
 # Evaluation (defaults shown)
 EVALUATION_SUPPORT_THRESHOLD=0.55
 EVALUATION_RECORD_PATH=benchmarks/results/evaluation_records.jsonl
+
+# Phase 3 Editor context and citation integrity (defaults shown)
+EDITOR_MAX_SOURCES=12
+EDITOR_MIN_SOURCES=3
+EDITOR_MAX_CONTEXT_CHARS=14000
+EDITOR_EXCERPT_CHARS=700
+EDITOR_NEAR_DUPLICATE_THRESHOLD=0.85
+EDITOR_MAX_JSON_TOKENS=1000
+EDITOR_MAX_MARKDOWN_TOKENS=700
+EDITOR_BIND_CITATIONS=true
+EDITOR_APPEND_LIMITATIONS=true
+LLM_REQUEST_TIMEOUT_SECONDS=1800
 ```
 
 - `.env` holds real credentials and **must never be committed**. Only
@@ -585,6 +815,19 @@ EVALUATION_RECORD_PATH=benchmarks/results/evaluation_records.jsonl
   fetch.
 - Retries apply only to raised provider errors. A successful empty DuckDuckGo
   response is returned as-is rather than retried.
+- `MAX_TOTAL_PAGES_PER_RUN` is a hard safety ceiling across all queries. Lower it
+  to reproduce the older, cheaper 12-fetch budget; raising it lets the 6 × 4
+  per-query plan spend its budget.
+- `ENABLE_SOURCE_RANKING=false` reproduces provider order for controlled
+  comparisons.
+- `EDITOR_MAX_SOURCES`, `EDITOR_MIN_SOURCES`, `EDITOR_MAX_CONTEXT_CHARS`, and
+  `EDITOR_EXCERPT_CHARS` bound the evidence block before generation. Lowering
+  them reduces prompt-evaluation time at the cost of source coverage; the
+  selector always keeps at least `EDITOR_MIN_SOURCES` and logs the reduction.
+- `EDITOR_BIND_CITATIONS=false` disables evidence-based citation binding.
+  `EDITOR_APPEND_LIMITATIONS=false` disables the measured limitations note.
+- `LLM_REQUEST_TIMEOUT_SECONDS` is a per-request runaway guard (default 1800 s).
+  It is not a full pipeline deadline and does not make slow hardware fast.
 
 ---
 
@@ -615,18 +858,25 @@ DuckDuckGo calls and should not be run in an offline or CI environment.
 
 ```powershell
 # Unit / regression suites (no external services)
-python tests/test_editor_generation_optimization.py      # 17 tests
-python tests/test_phase2_research_quality.py             # 26 tests
-python tests/test_phase2_instrumentation.py              # 7 checks
-python tests/test_phase3_evaluation.py                   # 23 tests
-python tests/test_phase3_reliability.py                  # 25 tests
-python tests/test_phase3_dataset_verification.py         # 44 checks
-python tests/test_production_hardening.py                # 20 tests
-python tests/test_analytics_dashboard.py                 # 9 tests
-python tests/test_metrics_persistence.py                 # 7 tests
-python tests/test_performance_tracking.py                # 6 tests
-python tests/test_evaluation_framework.py                # 55 tests
-python tests/test_web_search.py                          # 5 tests (live DuckDuckGo)
+py -3.13 tests/test_editor_generation_optimization.py      # 17 tests
+py -3.13 tests/test_phase2_research_quality.py             # 26 tests
+py -3.13 tests/test_retrieval_optimization.py              # 33 tests
+py -3.13 tests/test_phase3_editor_evidence.py              # 10 tests
+py -3.13 tests/test_phase3_citation_integrity.py           # 17 tests
+py -3.13 tests/test_phase3_editor_integration.py           # 6 tests
+py -3.13 tests/test_phase2_instrumentation.py             # 7 checks
+py -3.13 tests/test_phase3_evaluation.py                  # 23 tests
+py -3.13 tests/test_phase3_reliability.py                 # 25 tests
+py -3.13 tests/test_phase3_dataset_verification.py         # 44 checks
+py -3.13 tests/test_production_hardening.py                # 20 tests
+py -3.13 tests/test_analytics_dashboard.py                 # 9 tests
+py -3.13 tests/test_metrics_persistence.py                 # 7 tests
+py -3.13 tests/test_performance_tracking.py                # 6 tests
+py -3.13 tests/test_evaluation_framework.py                # 55 tests
+py -3.13 tests/test_web_search.py                          # 5 tests (live DuckDuckGo)
+
+# Or discover every module at once
+py -3.13 -m unittest discover -s tests -p "test_*.py"
 
 # Dataset structural validation
 python benchmarks/validate_dataset.py --dataset benchmarks/datasets/benchmark_v3.json
@@ -646,17 +896,27 @@ $env:PERF_ALLOW_REAL="1"
 python benchmarks/performance_harness.py --real --confirm-real
 ```
 
-Latest safe-suite result: **237 checks across 11 suite modules (including 55 new
-framework checks) plus 7 instrumentation checks passed, 0 failed**; validator
-**29/29 checks PASS** against `benchmark_v3.json`. The full 40-question benchmark
-was not executed.
+Latest safe-suite result: **305 checks passed, 0 failed** — 232 unittest tests
+from `unittest discover -s tests`, plus standalone suites of 44 dataset, 9
+analytics, 7 persistence, 6 performance, and 7 instrumentation checks. The
+validator passes **29/29 checks** against `benchmark_v3.json`. The full
+40-question benchmark was not executed, and discovery includes
+`tests/test_web_search.py`, which makes live DuckDuckGo calls; for an offline
+run, execute the modules individually and omit that file.
 
 The new framework suite covers dataset validation, retrieval metrics, answer
 quality, prompt safety, security, reliability, performance helpers, the optional
 judge, token accounting, and dashboard artifact loading.
 
+The retrieval-optimisation suite covers arXiv/DOI canonicalisation, redirect
+filtering, ranking and authority signals, planner validation and fallbacks,
+label-leak guards, retrieval depth, cross-query deduplication, fetch budgets,
+candidate-pool metrics, historical registry compatibility, and bounded 429
+retry/backoff.
+
 ```powershell
 py -3.13 tests/test_evaluation_framework.py
+py -3.13 tests/test_retrieval_optimization.py
 ```
 
 ---
@@ -709,7 +969,8 @@ Mocked result on 2026-11-18: **24 runs, 0 failures, P50 0.0407 s, P95 0.0422 s,
 orchestration timings, not model timings. Repeated 24-run samples varied from
 P50 0.0407 s to 0.2074 s under different host load, so treat them as relative
 indicators. The dedicated live performance run was not executed; live latency
-from three golden runs was P50 484.36 s / P95 497.54 s. See
+from three golden runs was P50 484.36 s / P95 497.54 s in the pre-optimization
+baseline and P50 1220.74 s / P95 1385.77 s in the post-change rerun. See
 [`docs/BENCHMARK_RESULTS.md`](docs/BENCHMARK_RESULTS.md).
 
 The `--real` mode of the original harness executes exactly one live pipeline run
@@ -776,8 +1037,9 @@ not hidden by passing tests.
   Streamlit app shows every stored session to anyone who can open it.
 - No rate limiting, concurrency control, or production-scale load testing. The
   new harness has a 6-run concurrency smoke test only.
-- No hard wall-clock timeout around LLM generation; a hung Ollama request must be
-  interrupted externally, although fetch/search calls are bounded.
+- LLM calls now have a configurable request timeout (`LLM_REQUEST_TIMEOUT_SECONDS`,
+  default 1800 s) that prevents an indefinitely hung socket. It is a per-request
+  guard, not a pipeline deadline, and cannot make CPU-bound inference faster.
 - No CI pipeline, dependency lockfile with hashes, or automated vulnerability
   scan.
 - No retention policy for research history or logs.
@@ -786,8 +1048,12 @@ not hidden by passing tests.
 
 **Research reliability limitations**
 
-- Retrieval quality depends on DuckDuckGo availability and the 12-fetch per-run
-  budget; providers can rate-limit.
+- Retrieval quality depends on DuckDuckGo availability and the configured fetch
+  budget (`MAX_TOTAL_PAGES_PER_RUN`, default 24); providers can rate-limit.
+- Deeper retrieval (6 queries × 10 results, up to 24 fetches) increased live
+  latency and, in the single measured rerun, lowered the deterministic
+  answer-quality proxy. It is a configurable recall/latency trade-off, not a
+  universal improvement.
 - DNS safety is checked before connecting, so a hostile resolver could change
   the answer between check and connection (TOCTOU). Full IP pinning is not
   implemented.
@@ -797,6 +1063,16 @@ not hidden by passing tests.
 - The Editor's streaming early-stop reduced a single measured run from 734.054 s
   to 193.217 s, but that comparison was not a controlled A/B: prompt size also
   changed (2,355 → 1,383 tokens) and the baseline is not stored in the database.
+- Editor evidence selection reduces the prompt deterministically, but the
+  round-robin rule can prefer subtopic diversity over the single highest-ranked
+  source. The selected IDs are logged so this trade-off is auditable.
+- Citation content support is lexical coverage of the claim by the cited
+  title/excerpt. It does not detect negation, paraphrase, or a subtly wrong
+  claim, and evidence-based binding can only choose among already-retrieved
+  sources.
+- Live Editor latency is dominated by local CPU inference. Context reduction
+  lowers prompt-evaluation work, but the measured stage can still take many
+  minutes per case; no general speed-up is claimed.
 
 **Data and deployment limitations**
 

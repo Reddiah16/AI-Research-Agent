@@ -54,16 +54,69 @@ class GraphState(TypedDict, total=False):
     editor_generation_mode: Optional[str]
     # Phase 2 research-quality provenance
     source_registry: List[Dict[str, Any]]
+    # Retrieval-stage pools (search candidates, ranked candidates, retained)
+    search_candidates: List[Dict[str, Any]]
+    candidate_pool: List[Dict[str, Any]]
     claim_citation_coverage: Optional[float]
     unsupported_citations: List[str]
     research_metrics: Dict[str, Any]
     # Phase 3 evaluation / reliability
     evaluation: Dict[str, Any]
+    editor_context: Dict[str, Any]
     pipeline_latency_seconds: Optional[float]
     pipeline_error: Optional[str]
 
 
 # --- Node Functions ---
+
+def _merge_candidates(
+    summaries: List[Dict[str, Any]],
+    key: str,
+    sort_by_score: bool,
+) -> List[Dict[str, Any]]:
+    """Deduplicate candidate records across queries and order them.
+
+    Ranked pools are ordered by the deterministic ranking score. Search pools
+    keep provider order (query index, then rank position), which is the order
+    that measures raw search recall.
+    """
+    best: Dict[str, Dict[str, Any]] = {}
+    order: Dict[str, tuple] = {}
+    for summary_index, summary in enumerate(summaries or []):
+        for record in summary.get(key) or []:
+            if not isinstance(record, dict):
+                continue
+            canonical = record.get("canonical_url") or record.get("url")
+            if not canonical:
+                continue
+            score = record.get("rank_score")
+            existing = best.get(canonical)
+            if existing is None or (
+                isinstance(score, (int, float))
+                and score > (existing.get("rank_score") or float("-inf"))
+            ):
+                best[canonical] = record
+                order[canonical] = (
+                    record.get("search_query_index", summary_index),
+                    record.get("rank_position", 0),
+                )
+    values = list(best.values())
+    if sort_by_score:
+        values.sort(
+            key=lambda record: (
+                -(float(record.get("rank_score") or 0.0)),
+                order.get(record.get("canonical_url") or record.get("url"), (0, 0)),
+                str(record.get("canonical_url") or ""),
+            )
+        )
+    else:
+        values.sort(
+            key=lambda record: (
+                order.get(record.get("canonical_url") or record.get("url"), (0, 0)),
+                str(record.get("canonical_url") or ""),
+            )
+        )
+    return values
 
 def planner_node(state: GraphState) -> Dict[str, Any]:
     """Triage Agent node — creates a research plan from the topic.
@@ -123,7 +176,16 @@ def research_node(state: GraphState) -> Dict[str, Any]:
             if url not in all_sources:
                 all_sources.append(url)
 
-    source_registry = build_source_registry(summaries)
+    source_registry = build_source_registry(
+        summaries,
+        sort_by_rank=bool(getattr(config, "enable_source_ranking", True)),
+    )
+    search_candidates = _merge_candidates(
+        summaries, "search_candidates", sort_by_score=False
+    )
+    candidate_pool = _merge_candidates(
+        summaries, "candidate_pool", sort_by_score=True
+    )
     research_metrics = {
         "search_results": sum(len(s.get("sources", [])) for s in summaries),
         "usable_evidence": sum(s.get("usable_evidence_count", 0) for s in summaries),
@@ -141,6 +203,26 @@ def research_node(state: GraphState) -> Dict[str, Any]:
         "search_attempts": sum(s.get("search_attempts") or 0 for s in summaries),
         "search_failures": sum(1 for s in summaries if s.get("search_error")),
         "registered_sources": len(source_registry),
+        # Retrieval-pool instrumentation (additive; historical fields above are
+        # unchanged).
+        "search_candidates": len(search_candidates),
+        "ranked_candidates": len(candidate_pool),
+        "duplicate_candidates_removed": sum(
+            s.get("duplicate_candidates_removed", 0) for s in summaries
+        ),
+        "redirects_rejected": sum(
+            s.get("redirects_rejected_count", 0) for s in summaries
+        ),
+        "cross_query_duplicates_skipped": sum(
+            s.get("cross_query_duplicates_skipped", 0) for s in summaries
+        ),
+        "snippet_only_sources": sum(
+            s.get("snippet_only_count", 0) for s in summaries
+        ),
+        "fetched_sources_ok": sum(
+            s.get("fetched_ok_count", 0) for s in summaries
+        ),
+        "ranking_enabled": bool(getattr(config, "enable_source_ranking", True)),
     }
 
     # Compute search network duration from individual query searches
@@ -162,6 +244,8 @@ def research_node(state: GraphState) -> Dict[str, Any]:
         "research_latency": round(research_latency, 3),
         "search_network_duration": round(search_network_duration, 3),
         "source_registry": source_registry,
+        "search_candidates": search_candidates,
+        "candidate_pool": candidate_pool,
         "research_metrics": research_metrics,
     }
 
@@ -186,7 +270,13 @@ def editor_node(state: GraphState) -> Dict[str, Any]:
         on_progress("editor", "running", "Synthesizing research summaries into a comprehensive report...")
 
     t_start = time.perf_counter()
-    report = run_editor_agent(plan, facts, config, on_chunk_callback=on_chunk)
+    report = run_editor_agent(
+        plan,
+        facts,
+        config,
+        on_chunk_callback=on_chunk,
+        source_registry=state.get("source_registry") or None,
+    )
     editor_latency = time.perf_counter() - t_start
 
     # Determine generation mode & report status
@@ -198,6 +288,7 @@ def editor_node(state: GraphState) -> Dict[str, Any]:
         raw_llm_sources = getattr(report, "_raw_llm_sources", None)
         claim_findings = getattr(report, "key_findings", []) or []
         unsupported_citations = getattr(report, "unsupported_citations", []) or []
+        editor_context = dict(getattr(report, "_editor_context_stats", {}) or {})
     else:
         logger.warning(f"[Editor Node] Fell back to unstructured report in {editor_latency:.3f}s")
         status = "complete_unstructured"
@@ -206,6 +297,7 @@ def editor_node(state: GraphState) -> Dict[str, Any]:
         raw_llm_sources = None
         claim_findings = []
         unsupported_citations = []
+        editor_context = {}
 
     # Source grounding analysis (citation alignment, not factual verification)
     grounding = analyze_source_grounding(
@@ -239,12 +331,22 @@ def editor_node(state: GraphState) -> Dict[str, Any]:
             getattr(config, "evaluation_support_threshold", 0.55) or 0.55
         ),
     )
+    # Additive Phase 3 telemetry. Historical evaluation fields are unchanged;
+    # these are diagnostics persisted inside the existing JSON metadata column.
+    evaluation["editor_context"] = editor_context
+    evaluation["node_latencies"] = {
+        "planner_seconds": state.get("planner_latency"),
+        "research_seconds": state.get("research_latency"),
+        "editor_seconds": round(editor_latency, 3),
+        "pipeline_seconds": state.get("pipeline_latency_seconds"),
+    }
 
     return {
         "report": report,
         "status": status,
         "editor_latency": round(editor_latency, 3),
         "editor_generation_mode": gen_mode,
+        "editor_context": editor_context,
         "grounded_sources": grounding["grounded_urls"],
         "grounded_sources_count": grounding["grounded_sources_count"],
         "citation_grounding_ratio": grounding["citation_grounding_ratio"],
@@ -316,8 +418,11 @@ def run_research_pipeline(
         "on_progress": on_progress,
         "on_chunk": on_chunk,
         "source_registry": [],
+        "search_candidates": [],
+        "candidate_pool": [],
         "research_metrics": {},
         "evaluation": {},
+        "editor_context": {},
         "pipeline_latency_seconds": None,
         "pipeline_error": None,
     }

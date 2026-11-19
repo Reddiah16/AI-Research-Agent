@@ -18,10 +18,16 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 from tools.research_evidence import canonical_url
 
 __all__ = [
+    "CANDIDATE_POOL_METRIC_VERSION",
     "DEFAULT_K_VALUES",
+    "REGISTRY_METRIC_VERSION",
+    "aggregate_candidate_pool_metrics",
     "aggregate_retrieval_metrics",
+    "documents_from_candidate_pool",
+    "documents_from_search_candidates",
     "documents_from_state",
     "documents_from_summaries",
+    "evaluate_candidate_pool_case",
     "evaluate_retrieval_case",
     "ndcg_at_k",
     "precision_at_k",
@@ -30,6 +36,12 @@ __all__ = [
 ]
 
 DEFAULT_K_VALUES: Tuple[int, ...] = (1, 3, 5, 10)
+
+# Versioned metric families. The registry family is the historical metric and
+# its implementation is intentionally unchanged. Candidate-pool metrics are
+# additive diagnostics over a wider retrieval stage.
+REGISTRY_METRIC_VERSION = "retrieval-registry-1.0"
+CANDIDATE_POOL_METRIC_VERSION = "retrieval-candidate-pool-1.0"
 
 
 def _key(url: Any) -> str:
@@ -275,6 +287,7 @@ def evaluate_retrieval_case(
 
     return {
         "case_id": case_id,
+        "metric_version": REGISTRY_METRIC_VERSION,
         "label_status": label_status,
         "ranked_count": len(ranked),
         "relevant_count": len(relevant),
@@ -328,11 +341,13 @@ def aggregate_retrieval_metrics(
 
 
 def documents_from_state(state: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Return the pipeline's source registry in retrieval order.
+    """Return the pipeline's source registry in its final display order.
 
-    The registry is built in the order evidence was retained by the Researcher.
-    That order is the retrieval ranking used here; the optional lexical
-    ``relevance`` score is reported but does not reorder the list.
+    The workflow may sort the registry by deterministic source score before
+    stable IDs are assigned; when ranking is disabled the registry stays in
+    first-seen retention order. In both cases this list is the retrieval
+    ranking used here; the optional lexical ``relevance`` score is reported but
+    does not reorder the list.
     """
     state = state or {}
     registry = state.get("source_registry") or []
@@ -383,3 +398,87 @@ def documents_from_summaries(
                 }
             )
     return documents
+
+
+def _documents_from_records(records: Sequence[Any]) -> List[Dict[str, Any]]:
+    """Convert candidate records (dict or URL string) to ranked documents."""
+    documents: List[Dict[str, Any]] = []
+    for index, record in enumerate(records or [], start=1):
+        if isinstance(record, str):
+            if record.strip():
+                documents.append({"rank": index, "url": record})
+            continue
+        if not isinstance(record, dict):
+            continue
+        url = record.get("url") or record.get("canonical_url")
+        if not isinstance(url, str) or not url.strip():
+            continue
+        documents.append(
+            {
+                "rank": record.get("rank_position", index),
+                "url": url,
+                "canonical_url": record.get("canonical_url"),
+                "title": record.get("title"),
+                "search_query": record.get("search_query"),
+                "rank_score": record.get("rank_score"),
+                "authority_score": record.get("authority_score"),
+                "source_type": record.get("source_type"),
+            }
+        )
+    return documents
+
+
+def documents_from_candidate_pool(state: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Return the ranked candidate pool (stage C) in ranking order.
+
+    This pool is captured before evidence retention, so it measures whether
+    search plus ranking surfaced the labelled source at all.
+    """
+    state = state or {}
+    return _documents_from_records(state.get("candidate_pool") or [])
+
+
+def documents_from_search_candidates(state: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Return normalized search candidates (stage B) in provider order."""
+    state = state or {}
+    return _documents_from_records(state.get("search_candidates") or [])
+
+
+def evaluate_candidate_pool_case(
+    case_id: str,
+    ranked_documents: Sequence[Any],
+    relevant_urls: Sequence[Any],
+    k_values: Sequence[int] = (5, 10),
+    pool: str = "ranked_candidates",
+) -> Dict[str, Any]:
+    """Evaluate a candidate pool with an explicit metric version and pool name.
+
+    This is a diagnostic metric, not a replacement for the historical
+    registry-based recall. It answers a different question: did the search /
+    ranking stage see the labelled source at all?
+    """
+    result = evaluate_retrieval_case(
+        case_id,
+        ranked_documents,
+        relevant_urls,
+        k_values=k_values,
+    )
+    result["metric_version"] = CANDIDATE_POOL_METRIC_VERSION
+    result["pool"] = pool
+    return result
+
+
+def aggregate_candidate_pool_metrics(
+    case_results: Sequence[Dict[str, Any]],
+    pool: str = "ranked_candidates",
+) -> Dict[str, Any]:
+    """Aggregate candidate-pool cases without counting unlabelled cases as zero."""
+    aggregate = aggregate_retrieval_metrics(case_results)
+    aggregate["metric_version"] = CANDIDATE_POOL_METRIC_VERSION
+    aggregate["pool"] = pool
+    aggregate["interpretation"] = (
+        "Candidate-pool recall measures whether the labelled URL appeared in "
+        "the ranked search pool before evidence retention. It is diagnostic "
+        "and additive; the historical registry metric is unchanged."
+    )
+    return aggregate

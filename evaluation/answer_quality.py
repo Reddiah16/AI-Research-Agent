@@ -30,6 +30,7 @@ from evaluation.metrics import (
     relevance,
     text_coverage,
 )
+from tools.citation_integrity import evaluate_citation_integrity
 from tools.report_parsing import count_words
 
 __all__ = [
@@ -525,6 +526,10 @@ def evaluate_answer_quality(
     ]
     return {
         "evaluator_version": "answer-quality-1.0",
+        # The scoring components and weights are unchanged from 1.0. Additive
+        # diagnostics carry their own version so historical overall scores stay
+        # comparable.
+        "diagnostics_version": "answer-quality-diagnostics-1.0",
         "question": question,
         "report": {
             "word_count": count_words(text),
@@ -536,11 +541,17 @@ def evaluate_answer_quality(
         "weights_used": weights,
         "measured_components": measured,
         "unmeasured_components": unmeasured,
+        # Additive diagnostics; component definitions and weights are unchanged
+        # so historical overall scores remain comparable.
+        "citation_integrity": evaluate_citation_integrity(
+            report, source_registry, threshold=threshold
+        ),
         "limitations": [
             "All components are deterministic lexical/structural proxies.",
             "Citation support is not factual verification or entailment.",
             "Unmeasured components are excluded from the weighting, never imputed as zero.",
             "Contextual recall requires reference findings; it is not measurable for open-topic runs.",
+            "Citation-integrity diagnostics are lexical alignment checks, not fact-checking.",
         ],
     }
 
@@ -560,7 +571,7 @@ def evaluate_case_answer_quality(
         "retrieved_sources_count": len(retrieved),
         "grounded_sources_count": state.get("grounded_sources_count"),
     }
-    return evaluate_answer_quality(
+    result = evaluate_answer_quality(
         question=str((case or {}).get("question") or ""),
         report=report,
         source_registry=registry,
@@ -570,6 +581,16 @@ def evaluate_case_answer_quality(
         target_aspects=((case or {}).get("metadata") or {}).get("target_aspects") or [],
         threshold=threshold,
     )
+    # Additive context/performance diagnostics for the benchmark artifact.
+    result["editor_context"] = state.get("editor_context") or {}
+    result["latency"] = {
+        "pipeline_seconds": state.get("pipeline_latency_seconds"),
+        "planner_seconds": state.get("planner_latency"),
+        "research_seconds": state.get("research_latency"),
+        "editor_seconds": state.get("editor_latency"),
+    }
+    result["token_usage"] = state.get("token_usage")
+    return result
 
 
 _BEHAVIOUR_CUES: Dict[str, Tuple[str, ...]] = {

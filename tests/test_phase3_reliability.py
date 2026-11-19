@@ -325,7 +325,7 @@ class ConfigTests(unittest.TestCase):
         self.assertTrue(config.respect_robots_txt)
         self.assertTrue(config.enforce_dns_safety)
         self.assertGreaterEqual(config.search_max_retries, 0)
-        self.assertEqual(config.max_pages_per_query, 2)
+        self.assertEqual(config.max_pages_per_query, 4)
         self.assertLessEqual(config.max_total_pages_per_run, 50)
         self.assertGreater(config.evaluation_support_threshold, 0.0)
         self.assertLessEqual(config.evaluation_support_threshold, 1.0)

@@ -49,8 +49,15 @@ from evaluation.golden_dataset import (  # noqa: E402
 )
 from evaluation.performance import summarise_latencies  # noqa: E402
 from evaluation.retrieval import (  # noqa: E402
+    CANDIDATE_POOL_METRIC_VERSION,
+    REGISTRY_METRIC_VERSION,
+    aggregate_candidate_pool_metrics,
     aggregate_retrieval_metrics,
+    documents_from_candidate_pool,
+    documents_from_search_candidates,
     documents_from_state,
+    documents_from_summaries,
+    evaluate_candidate_pool_case,
     evaluate_retrieval_case,
 )
 from generation.usage import get_usage, reset_usage  # noqa: E402
@@ -93,8 +100,170 @@ def _environment(config: ResearchConfig) -> Dict[str, Any]:
         "ollama_host": config.ollama_host,
         "search_provider": config.search_provider,
         "max_results": config.max_results,
-        "enable_page_fetch": config.enable_page_fetch,
+        "max_pages_per_query": config.max_pages_per_query,
+        "max_evidence_items_per_query": config.max_evidence_items_per_query,
         "max_total_pages_per_run": config.max_total_pages_per_run,
+        "planner_num_queries": config.planner_num_queries,
+        "planner_max_tokens": config.planner_max_tokens,
+        "enable_page_fetch": config.enable_page_fetch,
+        "enable_source_ranking": config.enable_source_ranking,
+        "fetch_429_max_retries": config.fetch_429_max_retries,
+        "editor_max_sources": config.editor_max_sources,
+        "editor_min_sources": config.editor_min_sources,
+        "editor_max_context_chars": config.editor_max_context_chars,
+        "editor_excerpt_chars": config.editor_excerpt_chars,
+        "editor_max_json_tokens": config.editor_max_json_tokens,
+        "editor_max_markdown_tokens": config.editor_max_markdown_tokens,
+        "editor_bind_citations": config.editor_bind_citations,
+        "editor_append_limitations": config.editor_append_limitations,
+        "llm_request_timeout_seconds": config.llm_request_timeout_seconds,
+    }
+
+
+_DIAGNOSTIC_KEYS = (
+    "registered_sources",
+    "search_candidates",
+    "ranked_candidates",
+    "duplicate_candidates_removed",
+    "cross_query_duplicates_skipped",
+    "redirects_rejected",
+    "snippet_only_sources",
+    "fetched_sources_ok",
+    "fetch_attempts",
+    "fetch_failures",
+)
+
+
+def _case_diagnostics(state: Dict[str, Any]) -> Dict[str, Any]:
+    """Deterministic retrieval-stage diagnostics for one live case."""
+    metrics = (state or {}).get("research_metrics") or {}
+    diagnostics = {key: int(metrics.get(key) or 0) for key in _DIAGNOSTIC_KEYS}
+    diagnostics["duplicate_sources_removed"] = (
+        diagnostics["duplicate_candidates_removed"]
+        + diagnostics["cross_query_duplicates_skipped"]
+    )
+    attempts = diagnostics["fetch_attempts"]
+    failures = diagnostics["fetch_failures"]
+    diagnostics["fetch_successes"] = max(0, attempts - failures)
+    diagnostics["fetch_success_rate"] = (
+        round(diagnostics["fetch_successes"] / attempts, 4) if attempts else None
+    )
+    return diagnostics
+
+
+def _aggregate_diagnostics(cases: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    totals = {key: 0 for key in _DIAGNOSTIC_KEYS}
+    totals["duplicate_sources_removed"] = 0
+    totals["fetch_successes"] = 0
+    for case in cases:
+        diagnostics = case.get("diagnostics") or {}
+        for key in totals:
+            if key == "duplicate_sources_removed":
+                totals[key] += int(diagnostics.get("duplicate_sources_removed") or 0)
+            elif key == "fetch_successes":
+                totals[key] += int(diagnostics.get("fetch_successes") or 0)
+            else:
+                totals[key] += int(diagnostics.get(key) or 0)
+    attempts = totals["fetch_attempts"]
+    totals["fetch_success_rate"] = (
+        round(totals["fetch_successes"] / attempts, 4) if attempts else None
+    )
+    totals["cases"] = len(cases)
+    return totals
+
+
+_CITATION_DIAGNOSTIC_FIELDS = (
+    "citation_precision",
+    "citation_coverage",
+    "evidence_support_rate",
+    "unsupported_claim_rate",
+    "partially_supported_claim_rate",
+    "fetched_source_share",
+    "snippet_only_share",
+    "source_type_diversity",
+    "query_coverage_count",
+    "bindings_added",
+    "displayed_source_count",
+    "cited_source_count",
+    "registry_source_count",
+)
+
+_EDITOR_CONTEXT_FIELDS = (
+    "sources_before",
+    "sources_after",
+    "chars_before",
+    "chars_after",
+    "approx_tokens_before",
+    "approx_tokens_after",
+    "near_duplicates_dropped",
+    "budget_dropped",
+    "prompt_chars",
+    "llm_calls",
+)
+
+
+def _mean_or_none(values: Sequence[float]) -> Optional[float]:
+    return round(sum(values) / len(values), 4) if values else None
+
+
+def _aggregate_numeric_section(
+    records: Sequence[Dict[str, Any]],
+    section: str,
+    fields: Sequence[str],
+) -> Dict[str, Any]:
+    """Aggregate optional numeric fields; missing values are never zero."""
+    output: Dict[str, Any] = {}
+    for field in fields:
+        values = [
+            float(record[section][field])
+            for record in records
+            if isinstance(record.get(section), dict)
+            and isinstance(record[section].get(field), (int, float))
+            and not isinstance(record[section].get(field), bool)
+        ]
+        output[field] = {
+            "mean": _mean_or_none(values),
+            "measured_cases": len(values),
+            "status": "measured" if values else "not_measurable",
+        }
+    return output
+
+
+def _aggregate_answer_diagnostics(
+    answer_records: Sequence[Dict[str, Any]],
+) -> Dict[str, Any]:
+    citation = _aggregate_numeric_section(
+        answer_records, "citation_integrity", _CITATION_DIAGNOSTIC_FIELDS
+    )
+    context = _aggregate_numeric_section(
+        answer_records, "editor_context", _EDITOR_CONTEXT_FIELDS
+    )
+    latency = _aggregate_numeric_section(
+        answer_records,
+        "latency",
+        ("planner_seconds", "research_seconds", "editor_seconds", "pipeline_seconds"),
+    )
+    consistency = [
+        bool(record["citation_integrity"].get("source_count_consistent"))
+        for record in answer_records
+        if isinstance(record.get("citation_integrity"), dict)
+        and record["citation_integrity"].get("source_count_consistent") is not None
+    ]
+    citation["source_count_consistent_rate"] = {
+        "mean": _mean_or_none([1.0 if value else 0.0 for value in consistency]),
+        "measured_cases": len(consistency),
+        "status": "measured" if consistency else "not_measurable",
+    }
+    return {
+        "citation_integrity": citation,
+        "editor_context": context,
+        "node_latency": latency,
+        "metric_versions": {
+            "citation_integrity": "citation-integrity-1.0",
+            "editor_evidence_selection": "editor-evidence-selection-1.0",
+            "answer_quality": "answer-quality-1.0",
+            "answer_quality_diagnostics": "answer-quality-diagnostics-1.0",
+        },
     }
 
 
@@ -248,6 +417,9 @@ def run_live(
 
     cases_out: List[Dict[str, Any]] = []
     retrieval_results: List[Dict[str, Any]] = []
+    search_results: List[Dict[str, Any]] = []
+    candidate_results: List[Dict[str, Any]] = []
+    evidence_results: List[Dict[str, Any]] = []
     answer_records: List[Dict[str, Any]] = []
     behaviour_results: List[Dict[str, Any]] = []
     latencies: List[float] = []
@@ -275,6 +447,32 @@ def run_live(
             (case.get("retrieval_ground_truth") or {}).get("relevant_urls") or [],
         )
         retrieval_results.append(retrieval)
+
+        relevant_urls = (
+            (case.get("retrieval_ground_truth") or {}).get("relevant_urls") or []
+        )
+        search_retrieval = evaluate_candidate_pool_case(
+            case["id"],
+            documents_from_search_candidates(state),
+            relevant_urls,
+            pool="search_candidates",
+        )
+        candidate_retrieval = evaluate_candidate_pool_case(
+            case["id"],
+            documents_from_candidate_pool(state),
+            relevant_urls,
+            pool="ranked_candidates",
+        )
+        evidence_retrieval = evaluate_candidate_pool_case(
+            case["id"],
+            documents_from_summaries((state or {}).get("facts") or []),
+            relevant_urls,
+            pool="retained_evidence",
+        )
+        search_results.append(search_retrieval)
+        candidate_results.append(candidate_retrieval)
+        evidence_results.append(evidence_retrieval)
+        diagnostics = _case_diagnostics(state)
 
         answer = evaluate_case_answer_quality(case, state)
         answer_records.append(answer)
@@ -323,6 +521,7 @@ def run_live(
                     or []
                 ),
                 "generation_mode": (state or {}).get("editor_generation_mode"),
+                "diagnostics": diagnostics,
                 "token_usage_delta": {
                     "calls": usage_after["calls"] - usage_before["calls"],
                     "prompt_tokens": usage_after["prompt_tokens"] - usage_before["prompt_tokens"],
@@ -331,7 +530,13 @@ def run_live(
                     "available": usage_after["calls_with_usage"] > usage_before["calls_with_usage"],
                 },
                 "retrieval": retrieval,
+                "search_retrieval": search_retrieval,
+                "candidate_retrieval": candidate_retrieval,
+                "evidence_retrieval": evidence_retrieval,
                 "answer_quality": answer,
+                "citation_integrity": answer.get("citation_integrity"),
+                "editor_context": answer.get("editor_context"),
+                "latency_breakdown": answer.get("latency"),
                 "expected_behavior": behaviour,
                 "engine_record": engine_record,
             }
@@ -343,6 +548,16 @@ def run_live(
         )
 
     retrieval_aggregate = aggregate_retrieval_metrics(retrieval_results)
+    search_aggregate = aggregate_candidate_pool_metrics(
+        search_results, pool="search_candidates"
+    )
+    candidate_aggregate = aggregate_candidate_pool_metrics(
+        candidate_results, pool="ranked_candidates"
+    )
+    evidence_aggregate = aggregate_candidate_pool_metrics(
+        evidence_results, pool="retained_evidence"
+    )
+    diagnostics_aggregate = _aggregate_diagnostics(cases_out)
     component_names: List[str] = []
     for record in answer_records:
         for name in (record.get("components") or {}):
@@ -366,6 +581,7 @@ def run_live(
         for record in answer_records
         if isinstance(record.get("overall_score"), (int, float))
     ]
+    answer_diagnostics = _aggregate_answer_diagnostics(answer_records)
     behaviour_measured = [
         item for item in behaviour_results if item.get("score") is not None
     ]
@@ -388,6 +604,16 @@ def run_live(
         "cases_completed": len(selected) - errors,
         "errors": errors,
         "retrieval": retrieval_aggregate,
+        "search_retrieval": search_aggregate,
+        "candidate_retrieval": candidate_aggregate,
+        "evidence_retrieval": evidence_aggregate,
+        "retrieval_versions": {
+            "registry": REGISTRY_METRIC_VERSION,
+            "search_candidates": CANDIDATE_POOL_METRIC_VERSION,
+            "ranked_candidates": CANDIDATE_POOL_METRIC_VERSION,
+            "retained_evidence": CANDIDATE_POOL_METRIC_VERSION,
+        },
+        "diagnostics": diagnostics_aggregate,
         "answer_quality": {
             "overall_mean": (
                 round(sum(overall_values) / len(overall_values), 4)
@@ -398,6 +624,7 @@ def run_live(
             "weights": ANSWER_QUALITY_WEIGHTS,
             "measured_cases": len(overall_values),
         },
+        "answer_diagnostics": answer_diagnostics,
         "expected_behavior": {
             "synthetic_cases": len(behaviour_results),
             "measured": len(behaviour_measured),
@@ -475,7 +702,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "dataset_sha256": report["dataset"]["sha256"],
         "cases_completed": report.get("cases_completed"),
         "retrieval": report.get("retrieval", {}).get("metrics"),
+        "candidate_retrieval": report.get("candidate_retrieval", {}).get("metrics"),
+        "search_retrieval": report.get("search_retrieval", {}).get("metrics"),
+        "evidence_retrieval": report.get("evidence_retrieval", {}).get("metrics"),
+        "retrieval_versions": report.get("retrieval_versions"),
+        "diagnostics": report.get("diagnostics"),
         "answer_quality": report.get("answer_quality", {}).get("components"),
+        "answer_diagnostics": report.get("answer_diagnostics"),
         "latency": report.get("latency"),
         "output_path": report.get("output_path"),
     }

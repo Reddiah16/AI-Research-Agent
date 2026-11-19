@@ -30,9 +30,10 @@ import logging
 import re
 import socket
 import ssl
+import time
 import zlib
 from html.parser import HTMLParser
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener
@@ -405,6 +406,20 @@ def _classify_fetch_error(exc: Exception) -> str:
     return f"network_error:{type(exc).__name__}"
 
 
+def _retry_after_seconds(headers: Any) -> Optional[float]:
+    """Read a bounded ``Retry-After`` header value when present."""
+    try:
+        value = headers.get("Retry-After") if headers is not None else None
+    except Exception:
+        return None
+    if not value:
+        return None
+    try:
+        return max(0.0, float(value))
+    except (TypeError, ValueError):
+        return None
+
+
 def fetch_page(
     url: str,
     timeout: float = 6.0,
@@ -415,6 +430,9 @@ def fetch_page(
     robots_policy: Optional[RobotsPolicy] = None,
     resolve_dns: bool = False,
     resolver: Optional[Resolver] = None,
+    retry_statuses: Sequence[int] = (429,),
+    max_retries: int = 0,
+    retry_backoff: float = 1.0,
 ) -> Dict[str, Any]:
     """Fetch a page and return extracted text with an explicit status record.
 
@@ -428,12 +446,16 @@ def fetch_page(
         robots_policy: Optional shared policy/cache (recommended for runs).
         resolve_dns: Resolve hostnames and reject private addresses.
         resolver: Injectable DNS resolver for tests.
+        retry_statuses: HTTP status codes eligible for bounded retry
+            (default: 429 Too Many Requests).
+        max_retries: Additional attempts after the first (0 = one attempt).
+        retry_backoff: Base exponential-backoff seconds between retries.
 
     Returns:
         Dict with ``ok``, ``url``, ``status``, ``content_type``, ``title``,
         ``text``, ``error``, ``fetched_chars``, ``truncated``,
-        ``robots_status`` and ``dns_checked``. Failures never raise; callers
-        fall back to the search snippet.
+        ``robots_status``, ``dns_checked`` and ``attempts``. Failures never
+        raise; callers fall back to the search snippet.
     """
     result: Dict[str, Any] = {
         "ok": False,
@@ -447,6 +469,7 @@ def fetch_page(
         "truncated": False,
         "robots_status": "not_checked",
         "dns_checked": bool(resolve_dns),
+        "attempts": 0,
     }
     if not is_safe_fetch_url(url, resolve_dns=resolve_dns, resolver=resolver):
         result["error"] = "blocked_or_invalid_url"
@@ -460,49 +483,71 @@ def fetch_page(
             return result
         result["robots_status"] = "allowed"
 
-    request = Request(
-        url,
-        headers={
-            "User-Agent": user_agent,
-            "Accept": "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.5",
-            "Accept-Encoding": "gzip, deflate",
-        },
-    )
-    try:
-        opener = build_opener(_SafeRedirectHandler(resolve_dns, resolver))
-        with opener.open(request, timeout=timeout) as response:
-            result["status"] = getattr(response, "status", None)
-            content_type = (response.headers.get("Content-Type") or "").split(";")[0].strip().lower()
-            result["content_type"] = content_type
-            if content_type and content_type not in _TEXT_CONTENT_TYPES:
-                result["error"] = f"unsupported_content_type:{content_type}"
-                return result
+    attempts = max(1, int(max_retries) + 1)
+    retry_codes = {int(code) for code in (retry_statuses or ()) if isinstance(code, int)}
 
-            raw = response.read(max_bytes + 1)
-            if len(raw) > max_bytes:
-                raw = raw[:max_bytes]
-                result["truncated"] = True
-            raw = _decompress(raw, response.headers.get("Content-Encoding") or "")
-            body = _decode_body(raw, content_type)
+    for attempt in range(1, attempts + 1):
+        result["attempts"] = attempt
+        request = Request(
+            url,
+            headers={
+                "User-Agent": user_agent,
+                "Accept": "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.5",
+                "Accept-Encoding": "gzip, deflate",
+            },
+        )
+        try:
+            opener = build_opener(_SafeRedirectHandler(resolve_dns, resolver))
+            with opener.open(request, timeout=timeout) as response:
+                result["status"] = getattr(response, "status", None)
+                content_type = (response.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+                result["content_type"] = content_type
+                if content_type and content_type not in _TEXT_CONTENT_TYPES:
+                    result["error"] = f"unsupported_content_type:{content_type}"
+                    return result
 
-        if content_type in {"text/html", "application/xhtml+xml"}:
-            extracted = html_to_text(body)
-        else:
-            extracted = {"title": "", "text": _clean_text(body)}
+                raw = response.read(max_bytes + 1)
+                if len(raw) > max_bytes:
+                    raw = raw[:max_bytes]
+                    result["truncated"] = True
+                raw = _decompress(raw, response.headers.get("Content-Encoding") or "")
+                body = _decode_body(raw, content_type)
 
-        result["title"] = extracted["title"]
-        result["text"] = extracted["text"]
-        result["fetched_chars"] = len(extracted["text"])
-        result["ok"] = bool(extracted["text"])
-        if not result["ok"]:
-            result["error"] = "empty_extracted_text"
-    except HTTPError as exc:
-        result["status"] = getattr(exc, "code", None)
-        result["error"] = f"http_error:{getattr(exc, 'code', 'unknown')}"
-    except (URLError, socket.timeout, TimeoutError, ssl.SSLError, OSError) as exc:
-        result["error"] = _classify_fetch_error(exc)
-    except Exception as exc:  # pragma: no cover - defensive boundary
-        logger.debug(f"Unexpected page-fetch failure for {url}: {exc}")
-        result["error"] = f"unexpected_error:{type(exc).__name__}"
+            if content_type in {"text/html", "application/xhtml+xml"}:
+                extracted = html_to_text(body)
+            else:
+                extracted = {"title": "", "text": _clean_text(body)}
+
+            result["title"] = extracted["title"]
+            result["text"] = extracted["text"]
+            result["fetched_chars"] = len(extracted["text"])
+            result["ok"] = bool(extracted["text"])
+            if not result["ok"]:
+                result["error"] = "empty_extracted_text"
+            return result
+        except HTTPError as exc:
+            code = getattr(exc, "code", None)
+            result["status"] = code
+            if isinstance(code, int) and code in retry_codes and attempt < attempts:
+                retry_after = _retry_after_seconds(getattr(exc, "headers", None))
+                delay = retry_after if retry_after is not None else float(retry_backoff) * attempt
+                delay = min(max(0.0, delay), 10.0)
+                result["error"] = f"http_error:{code}:retrying"
+                logger.info(
+                    f"Fetch attempt {attempt}/{attempts} for {url} returned {code}; "
+                    f"retrying in {delay:.2f}s"
+                )
+                if delay:
+                    time.sleep(delay)
+                continue
+            result["error"] = f"http_error:{code}"
+            return result
+        except (URLError, socket.timeout, TimeoutError, ssl.SSLError, OSError) as exc:
+            result["error"] = _classify_fetch_error(exc)
+            return result
+        except Exception as exc:  # pragma: no cover - defensive boundary
+            logger.debug(f"Unexpected page-fetch failure for {url}: {exc}")
+            result["error"] = f"unexpected_error:{type(exc).__name__}"
+            return result
 
     return result
