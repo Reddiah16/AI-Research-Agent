@@ -1,14 +1,29 @@
+<div align="center">
+
 # AI Research Agent
 
-A local multi-agent research assistant that plans a topic, retrieves web evidence, writes a source-linked report, and persists every run.
+**Research you can audit — local agents, bounded evidence, cited reports.**
+
+[![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/) [![LangGraph](https://img.shields.io/badge/LangGraph-0.6.5-1C3C3C?style=flat-square)](graph/workflow.py) [![Ollama](https://img.shields.io/badge/Ollama-Qwen3%3A4b-000000?style=flat-square)](generation/llm.py) [![Streamlit](https://img.shields.io/badge/Streamlit-1.58-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)](app.py) [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-SQLAlchemy-336791?style=flat-square&logo=postgresql&logoColor=white)](database/database.py) [![License](https://img.shields.io/badge/License-MIT-2EA44F?style=flat-square)](LICENSE)
+
+</div>
 
 ## Project Overview
-AI Research Agent turns a research topic into a structured Markdown report without cloud API keys. A Planner creates a diverse search plan, a Researcher retrieves and ranks web evidence, and an Editor writes a cited report with a local Ollama model. Runs are stored in PostgreSQL and explored through Streamlit tabs for the report, history, analytics, and evaluation. The pipeline is intentionally bounded and observable: every run records its queries, retrieved sources, fetch outcomes, evidence passed to the Editor, timings, citation diagnostics, and evaluation scores. It is a portfolio project and local research assistant, not a production service.
+AI Research Agent turns a research topic into a structured Markdown report without cloud LLM API keys. A Planner creates a diverse search plan, a Researcher retrieves and ranks web evidence, and an Editor writes a cited report with a local Ollama model. Runs are stored in PostgreSQL and explored through Streamlit tabs for the report, history, analytics, and evaluation. The pipeline is intentionally bounded and observable: every run records its queries, retrieved sources, fetch outcomes, evidence passed to the Editor, timings, citation diagnostics, and evaluation scores. It is a portfolio project and local research assistant, not a production service.
+
+## What Makes This Project Different?
+The design choices below make each stage inspectable and keep a small local model within usable limits:
+
+- **Local-first LLM inference.** Ollama and `qwen3:4b` run report generation locally, without cloud LLM API keys or per-token inference costs. Web searches and page fetching still use external services.
+- **Failure-aware agent separation.** Planner, Researcher, and Editor are distinct LangGraph nodes with different prompts and failure modes, so one bad stage can degrade without collapsing the run.
+- **Six query intents instead of one prompt.** Direct-topic, primary academic, constrained academic, documentation, comparison/implementation, and survey queries widen coverage before ranking begins.
+- **Deterministic ranking before spending budget.** Explicit scoring and cross-query deduplication decide which sources deserve a fetch, not provider order.
+- **Evidence selection, not context dumping.** Source and character budgets keep a 4B model inside a usable context while preserving stable source IDs.
+- **Citations checked against evidence.** Valid IDs, lexical support, and displayed-source consistency expose phantom or unsupported citations before the report is shown.
+- **Every run leaves a measurable trace.** PostgreSQL stores sessions, sources, timings, and evaluation fields, so regressions are visible rather than anecdotal.
 
 ## Problem Statement and Solution
-A chat model answers from its weights. It cannot retrieve current pages, show which page supports a statement, or retain a queryable record of what was searched and written. Naive retrieval adds new failure modes: too many sources overwhelm a 4B local model, citations point to pages that were never fetched, and a report can look grounded while a claim is unsupported.
-
-The solution is a staged pipeline with explicit budgets and checks:
+A chat model answers from its weights. It cannot retrieve current pages, show which page supports a statement, or retain a queryable record of what was searched and written. Naive retrieval adds new failure modes: too many sources overwhelm a 4B local model, citations point to pages that were never fetched, and a report can look grounded while a claim is unsupported. The solution is a staged pipeline with explicit budgets and checks:
 
 - generate a small, diverse query set instead of one broad query;
 - rank and deduplicate candidates before spending fetch budget;
@@ -29,15 +44,27 @@ The solution is a staged pipeline with explicit budgets and checks:
 ## System Architecture
 ```mermaid
 flowchart TD
-    U[User topic] --> UI[Streamlit UI<br/>Research · Report · History · Analytics · Evaluation]
-    UI --> P[Planner<br/>six-query research plan]
-    P --> R[Researcher<br/>search · fetch · rank · dedupe · evidence]
-    R --> E[Editor<br/>budget · generate · validate citations]
-    E --> DB[(PostgreSQL<br/>sessions · reports · sources)]
+    T([Research topic]) --> UI[Streamlit workspace]
+
+    subgraph PLAN [1 · Plan]
+        P[Planner<br/>six-intent query plan]
+    end
+
+    subgraph RESEARCH [2 · Research · sequential]
+        Q[DuckDuckGo<br/>10 results/query] --> F[Bounded fetch] --> R[Deterministic ranking] --> D[Canonicalise + deduplicate<br/>SRC-### registry]
+    end
+
+    subgraph WRITE [3 · Write]
+        S[Evidence selection<br/>budgeted context] --> E[Editor<br/>JSON-first report] --> C[Citation integrity]
+    end
+
+    UI --> P --> Q
+    D --> S
+    C --> REP[Report + sources] --> DB[(PostgreSQL)]
     DB --> UI
 ```
 
-The graph is linear: `START → planner → researcher → editor → END`. Search, ranking, evidence selection, and citation checks run inside the Researcher and Editor nodes, not as separate graph nodes. Queries are executed sequentially, not in parallel.
+The graph is linear: `START → planner → researcher → editor → END`. Search, ranking, evidence selection, and citation checks run inside the Researcher and Editor nodes, not as separate graph nodes. Queries are executed sequentially, not in parallel. A topic becomes a report in three moves: the Planner turns it into a validated query plan; the Researcher executes those queries in order and builds a ranked source registry; the Editor selects a budgeted evidence set, generates the report, and validates citations before persistence.
 
 ## Workflow Explanation
 1. **Plan** — the Planner validates the topic and requests six diverse queries plus focus areas.
@@ -74,38 +101,49 @@ The graph is linear: `START → planner → researcher → editor → END`. Sear
 
 `tools/report_parsing.py` separates retrieved (supported) URLs from phantom URLs that were never fetched, while `tools/grounding.py` measures claim-citation coverage. Unsupported citations are persisted and shown in the UI. These checks are lexical and structural: they do not establish factual correctness, detect negation or subtle misattribution, or prove that a source is reliable.
 
+## Engineering Highlights
+| Decision | Implementation | Why it matters |
+|---|---|---|
+| Bounded retrieval | 10 results/query, 4 fetches/query, 24/run | Caps latency and prevents source floods. |
+| Duplicate suppression | Canonical URLs and near-duplicate shingle checks | Avoids spending fetch budget and context on the same page. |
+| Stable source IDs | `SRC-###` assigned once, never renumbered | Keeps citations traceable through selection and persistence. |
+| Evidence-grounded checks | Valid IDs, lexical excerpt support, displayed-source consistency | Flags phantom or unsupported citations before display. |
+| Context reduction | ~56–58% smaller Editor prompt | Cuts prompt-evaluation work for local CPU inference. |
+
 ## Technology Stack
 | Technology | Purpose |
 |---|---|
 | Python 3.13 | Verified runtime for the application, tests, and benchmarks. |
 | LangGraph / LangChain | Linear three-node workflow over a shared `GraphState`, with local model plumbing. |
-| Ollama (`qwen3:4b`) | Local LLM inference; no cloud API keys required. |
+| Ollama (`qwen3:4b`) | Local LLM inference; no cloud LLM API keys required. |
 | DuckDuckGo (`ddgs`) | Web search provider for query results. |
 | PostgreSQL + SQLAlchemy 2.0 | Sessions, reports, sources, metrics, and idempotent `run_id` writes; SQLite fallback for tests. |
 | Pydantic 2 | Validation for plans, reports, and configuration. |
 | Streamlit 1.58 / Altair | Research, report, history, analytics, and evaluation UI with charts. |
-| unittest + custom harnesses | Unit, regression, dataset, security, reliability, and performance checks. |
 
 ## Project Screenshots
+### Application and research flow
 | Home page | Research progress |
 |---|---|
-| ![Home page with topic input, saved sessions, and five application tabs](screenshots/home_page_current.jpg) | ![Research progress showing live node status and collected search results](screenshots/research_progress.png) |
-| Topic input, saved sessions, model status, and tabs. | Live per-node progress during planning and retrieval. |
+| ![Home page with topic input, saved sessions, model status, and five application tabs](screenshots/home_page_current.jpg) | ![Research progress with live node status and per-query search results](screenshots/research_progress.png) |
+| Topic input, saved sessions, model status, and the five-tab workspace. | Live node timeline: plan creation and per-query search results. |
 
 | Planner node | Editor node |
 |---|---|
-| ![Planner node displaying generated search queries and focus areas](screenshots/planner_node.png) | ![Editor node showing report completion status](screenshots/editor_node.png) |
-| Generated query plan from an illustrative run. | Completion status and report preview. |
+| ![Planner node with generated search queries and focus areas](screenshots/planner_node.png) | ![Editor node with completion status and report preview](screenshots/editor_node.png) |
+| Validated query plan and focus areas from an illustrative run. | Completion status with pipeline counts and report preview. |
 
+### Report and history
 | Generated report | History |
 |---|---|
-| ![Generated report with sections and reference links](screenshots/final_report.png) | ![History tab listing saved research sessions](screenshots/history_tab.png) |
-| Persisted report with sections and references. | Reopen or delete saved sessions. |
+| ![Generated report with sections and numbered references](screenshots/final_report.png) | ![History tab with saved research sessions](screenshots/history_tab.png) |
+| Persisted report with six sections and a numbered reference list. | Reopen or delete saved sessions. |
 
+### Analytics and evaluation
 | Analytics dashboard | Evaluation results |
 |---|---|
-| ![Analytics dashboard with execution KPIs and charts](screenshots/final_1_top.png) | ![Evaluation tab showing benchmark artifacts, dataset size, and security results](screenshots/evaluation_results.jpg) |
-| PostgreSQL-backed KPI cards and charts. | Persisted scores and latest benchmark artifacts. |
+| ![Analytics dashboard with execution KPIs and charts](screenshots/final_1_top.png) | ![Evaluation tab with benchmark artifacts and security results](screenshots/evaluation_results.jpg) |
+| PostgreSQL-backed KPI cards and run charts. | Persisted scores and artifacts; 118 is dataset size, not live coverage. |
 
 ## Evaluation Framework and Results
 The evaluation layer is additive and deterministic. It does not alter the pipeline or benchmark datasets, and missing measurements are reported as `not_measured` or `not_measurable`, never as zero. Methodology is in [docs/EVALUATION_FRAMEWORK.md](docs/EVALUATION_FRAMEWORK.md); measured values and artifact names are in [docs/BENCHMARK_RESULTS.md](docs/BENCHMARK_RESULTS.md).
@@ -168,9 +206,7 @@ PLANNER_NUM_QUERIES=6
 SEARCH_MAX_RESULTS=10
 MAX_TOTAL_PAGES_PER_RUN=24
 EDITOR_MAX_SOURCES=12
-EDITOR_MIN_SOURCES=3
 EDITOR_MAX_CONTEXT_CHARS=14000
-EDITOR_EXCERPT_CHARS=700
 ```
 
 `.env` is git-ignored and must never be committed; `.env.example` is the tracked template. Lower budgets reduce prompt size and latency at the cost of source coverage. `RESPECT_ROBOTS_TXT` and `ENFORCE_DNS_SAFETY` affect page fetching only, and `LLM_REQUEST_TIMEOUT_SECONDS` (default 1800) is a per-request guard, not a pipeline deadline.
@@ -201,15 +237,13 @@ RESEARCH_AGENT/
 
 ## Known Limitations
 - **Not production-ready.** No authentication, authorisation, per-user isolation, rate limiting, or production-scale concurrency control.
-- **Evaluation is proxy-based.** Scores measure lexical and structural overlap, not semantic correctness; citation checks cannot detect negation, misattribution, or an unreliable source.
-- **Live coverage is narrow.** Live evaluation used three cases per run; the full 118-case live run and full benchmark end-to-end run were not executed.
+- **Evaluation is proxy-based and narrow.** Scores measure lexical and structural overlap, not semantic correctness; citation checks cannot detect negation, misattribution, or an unreliable source. Live evaluation used three cases per run, so the full 118-case live run and full benchmark end-to-end run were not executed.
 - **Retrieval is sequential and provider-dependent.** DuckDuckGo availability and fetch budgets bound quality, and the recall/latency trade-off is configurable rather than universally improved.
 - **Security probes are limited.** Deterministic checks cover selected code paths, not infrastructure or all injection variants; live probes leaked system-prompt text in the measured run.
 
 ## Future Improvements
 - Add authentication, per-user isolation, rate limiting, and a real job queue.
-- Run the full 118-case live evaluation and the full benchmark end-to-end.
-- Add semantic or human evaluation alongside the lexical proxies.
+- Run the full 118-case live evaluation and benchmark end-to-end, then add semantic or human evaluation alongside the lexical proxies.
 - Parallelise independent queries, add a shared retrieval cache, and introduce CI, dependency scanning, a REST API, and broader prompt-injection hardening.
 
 ## License
