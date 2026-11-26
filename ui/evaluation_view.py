@@ -11,6 +11,7 @@ quality is explicitly labelled as alignment, not factual correctness.
 from __future__ import annotations
 
 import logging
+import math
 from datetime import datetime, timezone
 from typing import Callable, Dict, List, Optional
 
@@ -370,6 +371,40 @@ def _render_latency(
     )
 
 
+def _metric_cell(value: object) -> str:
+    """Format one metric cell as text, with a dash for unmeasured values.
+
+    Arrow infers a numeric type for a float column and then rejects the
+    ``—`` placeholder, so every metric cell is rendered as text. Values keep
+    the previous four-decimal display; ``None``, NaN, and infinite values stay
+    visibly unavailable instead of being shown as zero.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return "—"
+    if not math.isfinite(value):
+        return "—"
+    return f"{round(value, 4)}"
+
+
+def _records_table(series: List[Dict]) -> pd.DataFrame:
+    """Build the recent-evaluation dataframe from stored series records."""
+    return pd.DataFrame([
+        {
+            "Run": f"#{record['id']}",
+            "Research Query": _shorten(record.get("topic")),
+            "Overall": _metric_cell(record.get("overall")),
+            "Relevance": _metric_cell(record.get("relevance")),
+            "Evidence": _metric_cell(record.get("evidence_coverage")),
+            "Citation": _metric_cell(record.get("citation_quality")),
+            "Completeness": _metric_cell(record.get("completeness")),
+            "Factual support": _metric_cell(record.get("factual_support")),
+            "Generation": record.get("generation_mode") or "—",
+            "Executed At (UTC)": (record.get("created_at") or "—")[:16].replace("T", " "),
+        }
+        for record in series
+    ])
+
+
 def _render_table(config: ResearchConfig) -> None:
     st.markdown("**Recent evaluation records**")
     series = get_evaluation_series(config, limit=50)
@@ -377,24 +412,7 @@ def _render_table(config: ResearchConfig) -> None:
         st.info("No evaluation records to display.")
         return
 
-    def _dash(value):
-        return round(value, 4) if isinstance(value, (int, float)) else "—"
-
-    table = pd.DataFrame([
-        {
-            "Run": f"#{record['id']}",
-            "Research Query": _shorten(record.get("topic")),
-            "Overall": _dash(record.get("overall")),
-            "Relevance": _dash(record.get("relevance")),
-            "Evidence": _dash(record.get("evidence_coverage")),
-            "Citation": _dash(record.get("citation_quality")),
-            "Completeness": _dash(record.get("completeness")),
-            "Factual support": _dash(record.get("factual_support")),
-            "Generation": record.get("generation_mode") or "—",
-            "Executed At (UTC)": (record.get("created_at") or "—")[:16].replace("T", " "),
-        }
-        for record in series
-    ])
+    table = _records_table(series)
     st.dataframe(table, use_container_width=True, hide_index=True)
     st.caption(
         "“—” means the metric was not measured for that run, not that it scored zero."
